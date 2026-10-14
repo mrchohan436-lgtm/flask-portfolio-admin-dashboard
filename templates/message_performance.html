@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Message Performance | Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+          <style>
+
+    /* =========================
+       MESSAGE PERFORMANCE
+    ========================== */
+
+    .performance-card {
+        background: #121826;
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: 24px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .performance-card h2,
+    .performance-card h3 {
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+
+    .performance-card p {
+        color: #b8c0d4;
+        margin-bottom: 10px;
+    }
+
+    .performance-card small {
+        color: #9da7bd;
+    }
+
+    .peak-time-value {
+        color: #8179ff !important;
+        font-size: 32px;
+        font-weight: 700;
+        margin: 10px 0;
+    }
+
+    .peak-time-count {
+        color: #e7e5e5 !important;
+        font-size: 14px;
+    }
+    .performance-stat-card {
+    background: #121826;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 22px;
+    border: 1px solid rgba(129, 121, 255, 0.15);
+}
+
+.performance-stat-card h3 {
+    color: #ffffff;
+    margin-bottom: 12px;
+}
+
+.performance-stat-card p {
+    color: #8179ff !important;
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0;
+}
+/* =========================
+   RESPONSE TIME QUALITY SCORE
+========================= */
+
+.response-quality-card {
+    background: #121826;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 22px;
+    border: 1px solid rgba(129, 121, 255, 0.15);
+}
+
+.response-quality-card h3 {
+    color: #ffffff !important;
+    margin-bottom: 12px;
+}
+
+.quality-score-value {
+    color: #8179ff;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.quality-score-value span {
+    color: #9da7bd;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.quality-progress {
+    width: 100%;
+    height: 8px;
+    background: #252d3d;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.quality-progress-bar {
+    height: 100%;
+    background: #8179ff;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.response-quality-rating {
+    display: inline-block;
+    color: #b8c0d4 !important;
+    font-size: 15px;
+    font-weight: 600;
+}
+/* =========================
+   QUALITY BREAKDOWN
+========================= */
+
+.quality-breakdown {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.quality-breakdown-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
+
+.quality-breakdown-item span {
+    display: block;
+    color: #9da7bd;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.quality-breakdown-item strong {
+    display: block;
+    color: #ffffff;
+    font-size: 18px;
+}
+.response-quality-insight {
+    color: #9da7bd !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    margin-top: 8px !important;
+    margin-bottom: 0 !important;
+    font-weight: 400 !important;
+}
+/* =========================
+   QUALITY CHANGE SUMMARY
+========================= */
+
+.quality-change-summary {
+    background: rgba(129, 121, 255, 0.06);
+    border: 1px solid rgba(129, 121, 255, 0.15);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.quality-change-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.quality-change-label {
+    color: #9da7bd;
+    font-size: 13px;
+}
+
+.quality-change-value {
+    color: #8179ff;
+    font-size: 24px;
+}
+
+.quality-change-details {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+    color: #9da7bd;
+    font-size: 12px;
+}
+
+.quality-change-details strong {
+    color: #ffffff;
+}
+
+.quality-change-message {
+    color: #b8c0d4 !important;
+    font-size: 11px !important;
+    margin: 8px 0 0 !important;
+}
+.quality-target-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.quality-target-info div {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
+
+.quality-target-info span {
+    display: block;
+    color: #9da7bd;
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.quality-target-info strong {
+    color: #ffffff;
+    font-size: 14px;
+}
+.quality-goal-progress {
+    margin-top: 16px;
+}
+
+.quality-goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.quality-goal-header span {
+    color: #9da7bd;
+    font-size: 12px;
+}
+
+.quality-goal-header strong {
+    color: #8179ff;
+    font-size: 14px;
+}
+
+.quality-goal-bar {
+    width: 100%;
+    height: 8px;
+    background: #252d3d;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.quality-goal-fill {
+    height: 100%;
+    background: #8179ff;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.quality-goal-progress small {
+    display: block;
+    color: #9da7bd;
+    font-size: 10px;
+    margin-top: 6px;
+}
+.quality-recommendation {
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(129, 121, 255, 0.06);
+    border: 1px solid rgba(129, 121, 255, 0.15);
+    border-radius: 8px;
+}
+
+.quality-recommendation-label {
+    display: block;
+    color: #8179ff;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.quality-recommendation p {
+    color: #b8c0d4 !important;
+    font-size: 11px !important;
+    line-height: 1.5;
+    margin: 0 !important;
+}
+
+/* =========================
+   RESPONSE QUALITY RECOMMENDATIONS
+========================= */
+
+.response-recommendations-card {
+    margin-top: 24px;
+}
+
+.response-recommendations-card h2 {
+    color: #ffffff;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.response-recommendations-card > p {
+    color: #9da7bd;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.response-recommendations-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.response-recommendations-card li {
+    background: rgba(129, 121, 255, 0.06);
+    border: 1px solid rgba(129, 121, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    color: #d6d9e4;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.response-recommendations-card li::before {
+    content: "✓";
+    color: #8179ff;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+/* =========================
+   RESPONSE PERFORMANCE ALERTS
+========================= */
+
+.response-alerts-card {
+    margin-top: 24px;
+}
+
+.response-alerts-card h2 {
+    color: #ffffff;
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+.response-alert {
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    border: 1px solid transparent;
+}
+
+.response-alert strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.response-alert p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.response-alert-warning {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.response-alert-warning strong {
+    color: #fbbf24;
+}
+
+.response-alert-danger {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.response-alert-danger strong {
+    color: #f87171;
+}
+
+.response-alert-success {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+.response-alert-success strong {
+    color: #4ade80;
+}
+.performance-date-filter {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+}
+
+.performance-date-filter form {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.performance-date-filter label {
+    color: #e5e7eb;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.performance-date-filter select {
+    background: #121826;
+    color: #ffffff;
+    border: 1px solid #6c63ff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.performance-date-filter select:focus {
+    outline: 2px solid #8179ff;
+    outline-offset: 2px;
+}
+/* =========================
+   RESPONSE ALERT ACTIONS
+========================= */
+
+.response-alert-action {
+    display: inline-block;
+    margin-top: 10px;
+    color: #a5a0ff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease,
+                transform 0.2s ease;
+}
+
+.response-alert-action:hover {
+    color: #ffffff;
+    transform: translateX(3px);
+}
+/* =========================
+   RESPONSE ALERT PRIORITY BADGES
+========================= */
+
+.response-alert-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.response-alert-heading strong {
+    margin-bottom: 0;
+}
+
+.response-alert-badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+}
+
+.response-alert-badge-warning {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.response-alert-badge-danger {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.response-alert-badge-success {
+    color: #4ade80;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+/* =========================
+   RESPONSE ALERT SUMMARY
+========================= */
+
+.response-alert-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin: 18px 0 22px;
+}
+
+.alert-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: rgba(129, 121, 255, 0.06);
+    border: 1px solid rgba(129, 121, 255, 0.18);
+    border-radius: 10px;
+}
+
+.alert-summary-item span {
+    color: #9da7bd;
+    font-size: 12px;
+}
+
+.alert-summary-item strong {
+    color: #ffffff;
+    font-size: 25px;
+    line-height: 1.2;
+}
+
+.alert-summary-warning {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.alert-summary-warning strong {
+    color: #fbbf24;
+}
+
+.alert-summary-critical {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.alert-summary-critical strong {
+    color: #f87171;
+}
+
+.alert-summary-healthy {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.alert-summary-healthy strong {
+    color: #4ade80;
+}
+
+@media (max-width: 700px) {
+    .response-alert-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 380px) {
+    .response-alert-summary {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    
+<div class="performance-date-filter">
+    <form method="GET" action="{{ url_for('message_performance_insights') }}">
+        <label for="range">Performance Date Range</label>
+
+        <select name="range" id="range" onchange="this.form.submit()">
+            <option value="all" {% if date_range == 'all' %}selected{% endif %}>
+                All Time
+            </option>
+
+            <option value="7" {% if date_range == '7' %}selected{% endif %}>
+                Last 7 Days
+            </option>
+
+            <option value="30" {% if date_range == '30' %}selected{% endif %}>
+                Last 30 Days
+            </option>
+
+            <option value="90" {% if date_range == '90' %}selected{% endif %}>
+                Last 90 Days
+            </option>
+        </select>
+    </form>
+</div>
+
+    <div class="admin-container">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+
+        <div class="admin-header">
+
+            <div>
+
+                <h1>
+                    Message Performance Insights
+                </h1>
+
+                <p>
+                    Analyze message activity and performance.
+                </p>
+
+            </div>
+
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="btn">
+                ← Dashboard
+            </a>
+
+        </div>
+
+
+        <!-- =========================
+             PERFORMANCE STATS
+        ========================== -->
+
+        <div class="dashboard-stats">
+
+            <!-- Total Messages -->
+
+            <div class="stat-card">
+
+                <h3>Total Messages</h3>
+
+                <p>
+                    {{ total_messages }}
+                </p>
+
+            </div>
+
+
+            <!-- Replied -->
+
+            <div class="stat-card">
+
+                <h3>Total Replied</h3>
+
+                <p>
+                    {{ total_replied }}
+                </p>
+
+            </div>
+
+
+            <!-- Read -->
+
+            <div class="stat-card">
+
+                <h3>Total Read</h3>
+
+                <p>
+                    {{ total_read }}
+                </p>
+
+            </div>
+
+
+            <!-- New -->
+
+            <div class="stat-card">
+
+                <h3>New Messages</h3>
+
+                <p>
+                    {{ total_new }}
+                </p>
+
+            </div>
+
+
+            <!-- Unique Senders -->
+
+            <div class="stat-card">
+
+                <h3>Unique Senders</h3>
+
+                <p>
+                    {{ unique_senders }}
+                </p>
+
+            </div>
+
+
+            <!-- Reply Rate -->
+
+            <div class="stat-card">
+
+                <h3>Reply Rate</h3>
+
+                <p>
+                    {{ reply_rate }}%
+                </p>
+
+            </div>
+
+
+            <!-- Read Rate -->
+
+            <div class="stat-card">
+
+                <h3>Read Rate</h3>
+
+                <p>
+                    {{ read_rate }}%
+                </p>
+
+            </div>
+
+
+            <!-- New Rate -->
+
+            <div class="stat-card">
+
+                <h3>New Rate</h3>
+
+                <p>
+                    {{ new_rate }}%
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             MESSAGE VOLUME CHART
+        ========================== -->
+
+        <div class="admin-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>
+                        Message Volume Trend
+                    </h2>
+
+                    <p>
+                        Daily messages received over time.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div style="height: 350px; padding: 20px;">
+
+                <canvas id="messageVolumeChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PEAK MESSAGING TIME
+        ========================== -->
+
+        <div class="performance-card">
+
+    <h3>
+        Peak Messaging Time
+    </h3>
+
+    {% if peak_messaging_hour %}
+
+        <p class="peak-time-value">
+            {{ peak_messaging_hour }}:00
+        </p>
+
+        <p class="peak-time-count">
+            {{ peak_messaging_count }}
+            messages received
+        </p>
+
+    {% else %}
+
+        <p>
+            No data
+        </p>
+
+    {% endif %}
+
+</div>
+
+<!-- =========================
+     BEST MESSAGING DAY
+========================== -->
+
+<div class="performance-card">
+
+    <h3>
+        Best Messaging Day
+    </h3>
+
+    {% if best_messaging_day %}
+
+        <p class="peak-time-value">
+            {{ best_messaging_day }}
+        </p>
+
+        <p class="peak-time-count">
+            {{ best_messaging_day_count }}
+            messages received
+        </p>
+
+    {% else %}
+
+        <p>
+            No data
+        </p>
+
+    {% endif %}
+
+</div>
+
+<!-- =========================
+     REPLY PERFORMANCE
+========================== -->
+
+<div class="performance-card">
+
+    <h2>
+        Reply Performance
+    </h2>
+
+    <p>
+        Overview of message response activity.
+    </p>
+
+
+    <div class="dashboard-stats">
+
+
+        <!-- Replied Messages -->
+
+        <div class="performance-stat-card">
+
+            <h3>
+                Replied Messages
+            </h3>
+
+            <p>
+                {{ total_replied }}
+            </p>
+
+        </div>
+
+
+        <!-- Unreplied Messages -->
+
+        <div class="performance-stat-card">
+
+            <h3>
+                Unreplied Messages
+            </h3>
+
+            <p>
+                {{ unreplied_messages }}
+            </p>
+
+        </div>
+
+
+        <!-- Reply Rate -->
+
+        <div class="performance-stat-card">
+
+            <h3>
+                Reply Rate
+            </h3>
+
+            <p>
+                {{ reply_rate }}%
+            </p>
+
+        </div>
+
+
+        <!-- Response Coverage -->
+
+        <div class="performance-stat-card">
+
+            <h3>
+                Response Coverage
+            </h3>
+
+            <p>
+                {{ response_coverage }}%
+            </p>
+
+        </div>
+
+        <!-- =========================
+     RESPONSE TIME QUALITY SCORE
+========================== -->
+
+<div class="performance-stat-card response-quality-card">
+
+    <h3>
+        Response Quality Score
+    </h3>
+
+    <div class="quality-score-value">
+        {{ response_time_quality_score }}
+        <span>/ 100</span>
+    </div>
+
+    <div class="quality-progress">
+
+        <div
+            class="quality-progress-bar"
+            style="width: {{ response_time_quality_score }}%;">
+        </div>
+
+    </div>
+
+    <span class="response-quality-rating">
+        {{ response_quality_rating }}
+    </span>
+
+<div class="quality-target-info">
+
+    <div>
+        <span>Target Score</span>
+        <strong>
+            {{ response_quality_target }}/100
+        </strong>
+    </div>
+
+    <div>
+        <span>Difference</span>
+        <strong>
+            {% if response_quality_difference > 0 %}
+                +{{ response_quality_difference }}
+            {% else %}
+                {{ response_quality_difference }}
+            {% endif %}
+        </strong>
+    </div>
+
+    <div>
+        <span>Status</span>
+        <strong>
+            {{ response_quality_target_status }}
+        </strong>
+    </div>
+
+</div>
+<div class="quality-goal-progress">
+
+    <div class="quality-goal-header">
+
+        <span>
+            Goal Progress
+        </span>
+
+        <strong>
+            {{ response_quality_goal_progress }}%
+        </strong>
+
+    </div>
+
+    <div class="quality-goal-bar">
+
+        <div
+            class="quality-goal-fill"
+            style="width: {{ response_quality_goal_progress }}%;">
+        </div>
+
+    </div>
+
+    <small>
+        Progress toward {{ response_quality_target }}/100 target
+    </small>
+
+</div>
+
+
+<div class="quality-recommendation">
+
+    <span class="quality-recommendation-label">
+        Recommendation
+    </span>
+
+    <p>
+        {{ response_quality_recommendation }}
+    </p>
+
+</div>
+
+
+    <p class="response-quality-insight">
+    {{ response_quality_insight }}
+</p>
+    <div class="quality-breakdown">
+
+    <div class="quality-breakdown-item">
+
+        <span>
+            Fast Responses
+        </span>
+
+        <strong>
+            {{ fast_responses }}
+        </strong>
+
+    </div>
+
+
+    <div class="quality-breakdown-item">
+
+        <span>
+            Moderate Responses
+        </span>
+
+        <strong>
+            {{ moderate_responses }}
+        </strong>
+
+    </div>
+
+
+    <div class="quality-breakdown-item">
+
+        <span>
+            Slow Responses
+        </span>
+
+        <strong>
+            {{ slow_responses }}
+        </strong>
+
+    </div>
+
+</div>
+
+</div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     RESPONSE PERFORMANCE ALERTS
+========================== -->
+
+<div class="performance-card response-alerts-card">
+
+    <h2>Response Performance Alerts</h2>
+<!-- RESPONSE ALERT SUMMARY -->
+
+<div class="response-alert-summary">
+
+    <div class="alert-summary-item">
+        <span>Total Alerts</span>
+        <strong>{{ total_response_alerts }}</strong>
+    </div>
+
+    <div class="alert-summary-item alert-summary-warning">
+        <span>Warnings</span>
+        <strong>{{ warning_alerts_count }}</strong>
+    </div>
+
+    <div class="alert-summary-item alert-summary-critical">
+        <span>Critical</span>
+        <strong>{{ critical_alerts_count }}</strong>
+    </div>
+
+    <div class="alert-summary-item alert-summary-healthy">
+        <span>Healthy</span>
+        <strong>{{ healthy_alerts_count }}</strong>
+    </div>
+
+</div>
+
+    {% for alert in response_performance_alerts %}
+        <div class="response-alert response-alert-{{ alert.level }}">
+<div class="response-alert-heading">
+    <strong>{{ alert.title }}</strong>
+
+    <span class="response-alert-badge response-alert-badge-{{ alert.level }}">
+        {% if alert.level == "danger" %}
+            CRITICAL
+        {% elif alert.level == "warning" %}
+            WARNING
+        {% else %}
+            HEALTHY
+        {% endif %}
+    </span>
+</div>
+
+<p>{{ alert.message }}</p>
+
+
+{% if alert.title == "Pending Messages Alert" %}
+
+    <a href="{{ url_for('admin_messages', status='New') }}"
+       class="response-alert-action">
+        View New Messages →
+    </a>
+
+
+{% elif alert.title == "Slow Response Alert" %}
+
+    <a href="{{ url_for('admin_messages', response='slow') }}"
+       class="response-alert-action">
+        Review Slow Responses →
+    </a>
+
+
+{% elif alert.title == "Low Response Quality" %}
+
+    <a href="{{ url_for('admin_messages', response='slow') }}"
+       class="response-alert-action">
+        Review Messages Needing Attention →
+    </a>
+
+{% endif %}
+
+
+        </div>
+    {% endfor %}
+
+</div>
+
+<!-- =========================
+     RESPONSE TIME ANALYSIS
+========================== -->
+
+<div class="performance-card">
+
+    <h2>
+        Response Time Analysis
+    </h2>
+
+    <p>
+        How quickly messages are being answered.
+    </p>
+
+    <div class="dashboard-stats">
+
+        <div class="performance-stat-card">
+            <h3>Average Response Time</h3>
+
+            <p>
+                {% if average_response_seconds > 0 %}
+                    {{ (average_response_seconds // 3600) }}h
+                    {{ ((average_response_seconds % 3600) // 60) }}m
+                {% else %}
+                    0m
+                {% endif %}
+            </p>
+        </div>
+
+
+        <div class="performance-stat-card">
+            <h3>Fastest Response</h3>
+
+            <p>
+                {% if fastest_response_seconds > 0 %}
+                    {% if fastest_response_seconds >= 3600 %}
+                        {{ (fastest_response_seconds // 3600) }}h
+                        {{ ((fastest_response_seconds % 3600) // 60) }}m
+                    {% else %}
+                        {{ (fastest_response_seconds // 60) }}m
+                    {% endif %}
+                {% else %}
+                    0m
+                {% endif %}
+            </p>
+        </div>
+
+
+        <div class="performance-stat-card">
+            <h3>Slowest Response</h3>
+
+            <p>
+                {% if slowest_response_seconds > 0 %}
+                    {% if slowest_response_seconds >= 3600 %}
+                        {{ (slowest_response_seconds // 3600) }}h
+                        {{ ((slowest_response_seconds % 3600) // 60) }}m
+                    {% else %}
+                        {{ (slowest_response_seconds // 60) }}m
+                    {% endif %}
+                {% else %}
+                    0m
+                {% endif %}
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     RESPONSE QUALITY RECOMMENDATIONS
+========================== -->
+
+<div class="performance-card response-recommendations-card">
+
+    <h2>Response Quality Recommendations</h2>
+
+    <p>Suggestions based on your response performance.</p>
+
+    <ul>
+        {% for recommendation in response_quality_recommendations %}
+            <li>{{ recommendation }}</li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+<!-- =========================
+     RESPONSE QUALITY TREND
+========================== -->
+
+<div class="performance-card">
+
+    <div class="quality-change-summary">
+
+    <div class="quality-change-main">
+
+        <span class="quality-change-label">
+            Quality Change
+        </span>
+
+        <strong class="quality-change-value">
+            {% if quality_score_change is not none and quality_score_change > 0 %}
+                +{{ quality_score_change }}
+            {% elif quality_score_change is not none and quality_score_change < 0 %}
+                {{ quality_score_change }}
+            {% else %}
+                0
+            {% endif %}
+        </strong>
+
+    </div>
+
+
+    <div class="quality-change-details">
+
+        <span>
+            Current:
+            <strong>
+                {{ current_quality_score }}
+            </strong>
+        </span>
+
+        <span>
+            Previous:
+            <strong>
+                {{ previous_quality_score }}
+            </strong>
+        </span>
+
+    </div>
+
+
+    <p class="quality-change-message">
+        {{ quality_change_message }}
+    </p>
+
+</div>
+
+    <h2>
+        Response Quality Trend
+    </h2>
+
+    <p>
+        Daily response quality score over time.
+    </p>
+
+    <div style="height: 350px; padding: 20px;">
+
+        <canvas id="responseQualityTrendChart"></canvas>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     RESPONSE QUALITY BREAKDOWN
+========================== -->
+
+<div class="performance-card">
+
+    <h2>
+        Response Quality Breakdown
+    </h2>
+
+    <p>
+        Distribution of response speed across replied messages.
+    </p>
+
+    <div style="height: 350px; padding: 20px;">
+        <canvas id="responseQualityBreakdownChart"></canvas>
+    </div>
+
+</div>
+
+<script>
+    // =========================
+    // RESPONSE QUALITY BREAKDOWN
+    // =========================
+
+    const fastResponses =
+        {{ fast_responses | tojson }};
+
+    const moderateResponses =
+        {{ moderate_responses | tojson }};
+
+    const slowResponses =
+        {{ slow_responses | tojson }};
+
+    const responseQualityBreakdownCanvas =
+        document.getElementById(
+            "responseQualityBreakdownChart"
+        );
+
+    if (responseQualityBreakdownCanvas) {
+
+        new Chart(
+            responseQualityBreakdownCanvas,
+            {
+                type: "doughnut",
+
+                data: {
+                    labels: [
+                        "Fast Responses",
+                        "Moderate Responses",
+                        "Slow Responses"
+                    ],
+
+                    datasets: [
+                        {
+                            data: [
+                                fastResponses,
+                                moderateResponses,
+                                slowResponses
+                            ],
+
+                            borderWidth: 0
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        }
+                    },
+
+                    cutout: "65%"
+                }
+            }
+        );
+    }
+</script>
+<!-- =========================
+     RESPONSE QUALITY TREND DATA
+========================== -->
+
+<script id="response-quality-trend-data"
+        type="application/json">
+
+    {{ response_quality_trend | tojson }}
+
+</script>
+
+
+<!-- =========================
+     RESPONSE QUALITY TREND CHART
+========================== -->
+
+<script>
+
+    const responseQualityTrendData =
+        JSON.parse(
+            document.getElementById(
+                "response-quality-trend-data"
+            ).textContent
+        );
+
+
+    const responseQualityTrendLabels =
+        responseQualityTrendData.map(
+            item => item.date
+        );
+
+
+    const responseQualityTrendValues =
+        responseQualityTrendData.map(
+            item => item.score
+        );
+
+
+    const responseQualityTrendCanvas =
+        document.getElementById(
+            "responseQualityTrendChart"
+        );
+
+
+    if (responseQualityTrendCanvas) {
+
+        new Chart(
+            responseQualityTrendCanvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels:
+                        responseQualityTrendLabels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Quality Score",
+
+                            data:
+                                responseQualityTrendValues,
+
+                            borderWidth:
+                                2,
+
+                            tension:
+                                0.35,
+
+                            fill:
+                                false,
+
+                            pointRadius:
+                                4,
+
+                            pointHoverRadius:
+                                6
+
+                        }
+
+                    ]
+
+                },
+
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            max:
+                                100,
+
+                            ticks: {
+
+                                precision:
+                                    0
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+</script>
+
+<!-- =========================
+     RESPONSE TIME DISTRIBUTION
+========================== -->
+
+<div class="performance-card">
+
+    <h2>
+        Response Time Distribution
+    </h2>
+
+    <p>
+        Breakdown of how quickly messages are being answered.
+    </p>
+
+    <div style="height: 350px; padding: 20px;">
+
+        <canvas id="responseTimeDistributionChart"></canvas>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     RESPONSE TIME DATA
+========================== -->
+
+<script id="response-time-distribution-data"
+        type="application/json">
+
+    {{ response_time_distribution | tojson }}
+
+</script>
+
+
+<!-- =========================
+     RESPONSE TIME CHART
+========================== -->
+
+<script>
+
+    const responseTimeDistributionData =
+        JSON.parse(
+            document.getElementById(
+                "response-time-distribution-data"
+            ).textContent
+        );
+
+
+    console.log(
+        "Response Time Distribution:",
+        responseTimeDistributionData
+    );
+
+
+    const responseTimeDistributionLabels =
+        responseTimeDistributionData.map(
+            item => item.response_range
+        );
+
+
+    const responseTimeDistributionValues =
+        responseTimeDistributionData.map(
+            item => item.response_count
+        );
+
+
+    const responseTimeDistributionCanvas =
+        document.getElementById(
+            "responseTimeDistributionChart"
+        );
+
+
+    if (responseTimeDistributionCanvas) {
+
+        new Chart(
+            responseTimeDistributionCanvas,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels:
+                        responseTimeDistributionLabels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Responses",
+
+                            data:
+                                responseTimeDistributionValues,
+
+                            borderWidth:
+                                1
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            ticks: {
+
+                                precision:
+                                    0
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+</script>
+
+    <!-- =========================
+         MESSAGE VOLUME DATA
+    ========================== -->
+
+    <script id="message-volume-data"
+            type="application/json">
+
+        [
+            {% for item in message_volume %}
+
+                {
+                    "date":
+                    {{ item['message_date']|tojson }},
+
+                    "count":
+                    {{ item['message_count'] }}
+
+                }{% if not loop.last %},{% endif %}
+
+            {% endfor %}
+        ]
+
+    </script>
+
+
+    <!-- =========================
+         MESSAGE VOLUME CHART
+    ========================== -->
+
+    <script>
+
+        const messageVolumeData =
+            JSON.parse(
+                document.getElementById(
+                    "message-volume-data"
+                ).textContent
+            );
+
+
+        const messageVolumeLabels =
+            messageVolumeData.map(
+                item => item.date
+            );
+
+
+        const messageVolumeValues =
+            messageVolumeData.map(
+                item => item.count
+            );
+
+
+        const messageVolumeCanvas =
+            document.getElementById(
+                "messageVolumeChart"
+            );
+
+
+        if (messageVolumeCanvas) {
+
+            new Chart(
+                messageVolumeCanvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels:
+                            messageVolumeLabels,
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "Messages",
+
+                                data:
+                                    messageVolumeValues,
+
+                                borderWidth:
+                                    2,
+
+                                tension:
+                                    0.35,
+
+                                fill:
+                                    false,
+
+                                pointRadius:
+                                    4,
+
+                                pointHoverRadius:
+                                    6
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive:
+                            true,
+
+                        maintainAspectRatio:
+                            false,
+
+
+                        plugins: {
+
+                            legend: {
+
+                                display:
+                                    true
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero:
+                                    true,
+
+                                ticks: {
+
+                                    precision:
+                                        0
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>New Contact Message</title>
+</head>
+
+<body style="
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f8;
+    font-family: Arial, Helvetica, sans-serif;
+">
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"
+           style="background-color: #f4f6f8; padding: 40px 15px;">
+
+        <tr>
+            <td align="center">
+
+                <table width="600" cellpadding="0" cellspacing="0" border="0"
+                       style="
+                           max-width: 600px;
+                           width: 100%;
+                           background-color: #ffffff;
+                           border-radius: 12px;
+                           overflow: hidden;
+                           box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                       ">
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="
+                            background-color: #111827;
+                            padding: 30px;
+                            text-align: center;
+                        ">
+
+                            <h1 style="
+                                margin: 0;
+                                color: #ffffff;
+                                font-size: 24px;
+                            ">
+                                New Contact Message
+                            </h1>
+
+                            <p style="
+                                margin: 8px 0 0;
+                                color: #d1d5db;
+                                font-size: 14px;
+                            ">
+                                Your portfolio website received a new message.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 30px;">
+
+                            <p style="
+                                margin-top: 0;
+                                color: #374151;
+                                font-size: 16px;
+                            ">
+                                Hello Admin,
+                            </p>
+
+                            <p style="
+                                color: #6b7280;
+                                font-size: 15px;
+                                line-height: 1.6;
+                            ">
+                                Someone has contacted you through your portfolio
+                                website. Here are the message details:
+                            </p>
+
+                            <!-- Sender Information -->
+                            <table width="100%" cellpadding="0" cellspacing="0"
+                                   style="
+                                       background-color: #f9fafb;
+                                       border-radius: 8px;
+                                       margin: 20px 0;
+                                   ">
+
+                                <tr>
+                                    <td style="padding: 15px;">
+
+                                        <p style="
+                                            margin: 0 0 8px;
+                                            color: #6b7280;
+                                            font-size: 13px;
+                                        ">
+                                            NAME
+                                        </p>
+
+                                        <p style="
+                                            margin: 0;
+                                            color: #111827;
+                                            font-size: 16px;
+                                            font-weight: bold;
+                                        ">
+                                            {{ name }}
+                                        </p>
+
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding: 15px;">
+
+                                        <p style="
+                                            margin: 0 0 8px;
+                                            color: #6b7280;
+                                            font-size: 13px;
+                                        ">
+                                            EMAIL
+                                        </p>
+
+                                        <p style="
+                                            margin: 0;
+                                            color: #111827;
+                                            font-size: 16px;
+                                        ">
+                                            {{ email }}
+                                        </p>
+
+                                    </td>
+                                </tr>
+
+                            </table>
+
+                            <!-- Message -->
+                            <p style="
+                                margin-bottom: 8px;
+                                color: #6b7280;
+                                font-size: 13px;
+                                font-weight: bold;
+                            ">
+                                MESSAGE
+                            </p>
+
+                            <div style="
+                                background-color: #f9fafb;
+                                border-left: 4px solid #111827;
+                                padding: 18px;
+                                border-radius: 6px;
+                                color: #374151;
+                                font-size: 15px;
+                                line-height: 1.6;
+                                white-space: pre-line;
+                            ">
+                                {{ message }}
+                            </div>
+
+                            <!-- Button -->
+                            <div style="
+                                text-align: center;
+                                margin-top: 30px;
+                            ">
+
+                                <a href="http://127.0.0.1:5000/admin/messages"
+                                   style="
+                                       display: inline-block;
+                                       background-color: #111827;
+                                       color: #ffffff;
+                                       text-decoration: none;
+                                       padding: 13px 24px;
+                                       border-radius: 6px;
+                                       font-size: 14px;
+                                       font-weight: bold;
+                                   ">
+                                    Open Admin Panel
+                                </a>
+
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="
+                            background-color: #f9fafb;
+                            padding: 20px;
+                            text-align: center;
+                        ">
+
+                            <p style="
+                                margin: 0;
+                                color: #9ca3af;
+                                font-size: 12px;
+                            ">
+                                This email was automatically generated by your
+                                portfolio website.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+
+    </table>
+
+</body>
+</html>

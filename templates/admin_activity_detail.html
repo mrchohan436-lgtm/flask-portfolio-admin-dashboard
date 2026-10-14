@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Activity Details | Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="admin-header">
+
+        <div>
+
+            <h1>Activity Details</h1>
+
+            <p>
+                View complete information about this admin activity.
+            </p>
+
+        </div>
+
+        <div class="admin-actions">
+
+            <a href="{{ url_for('admin_activity_log') }}"
+               class="btn">
+                Activity Log
+            </a>
+
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="btn">
+                Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         ACTIVITY DETAILS
+    ========================== -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Activity Information</h2>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <tbody>
+
+                    <tr>
+                        <th>ID</th>
+                        <td>#{{ activity["id"] }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Admin</th>
+                        <td>{{ activity["admin_username"] }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Action</th>
+                        <td>{{ activity["action"] }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            {{ activity["description"] or "—" }}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Message ID</th>
+                        <td>
+
+                            {% if activity["message_id"] %}
+
+                                #{{ activity["message_id"] }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Date</th>
+                        <td>{{ activity["created_at"] }}</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- RELATED MESSAGE -->
+
+        {% if activity["message_id"] %}
+
+        <div style="margin-top: 20px;">
+
+            <a href="{{ url_for(
+                'view_message',
+                message_id=activity['message_id']
+            ) }}"
+               class="btn">
+
+                View Related Message
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

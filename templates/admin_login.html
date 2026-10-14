@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login | Abubakar</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<main class="login-page">
+
+    <div class="login-card">
+
+        <div class="login-logo">
+            Admin<span>.</span>
+        </div>
+
+        <p class="tag">SECURE AREA</p>
+
+        <h1>Welcome back</h1>
+
+        <p class="login-description">
+            Sign in to manage your contact messages.
+        </p>
+
+
+        {% if error %}
+
+        <div class="login-error">
+            {{ error }}
+        </div>
+
+        {% endif %}
+
+
+        <form
+            action="{{ url_for('admin_login') }}"
+            method="POST"
+            class="login-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter username"
+                    autocomplete="username"
+                    required>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter password"
+                    autocomplete="current-password"
+                    required>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn primary login-button">
+
+                Login
+
+            </button>
+
+        </form>
+
+
+        <a
+            href="{{ url_for('home') }}"
+            class="back-link login-back">
+
+            ← Back to Portfolio
+
+        </a>
+
+    </div>
+
+</main>
+
+</body>
+
+</html>

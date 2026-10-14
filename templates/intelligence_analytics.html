@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Intelligence Analytics | Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="admin-header">
+
+        <div>
+            <p class="detail-label">
+                ADMIN ANALYTICS
+            </p>
+
+            <h1>
+                🧠 Message Intelligence
+            </h1>
+
+            <p class="intelligence-description">
+                Analyze message quality, priority, sentiment and
+                communication patterns.
+            </p>
+        </div>
+
+        <div class="admin-header-actions">
+
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="admin-btn">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('admin_messages') }}"
+               class="admin-btn">
+                Messages
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         INTELLIGENCE STATS
+    ========================== -->
+
+    <div class="dashboard-stats">
+
+        <!-- Total -->
+
+        <div class="stat-card">
+
+            <h3>
+                Total Analyzed
+            </h3>
+
+            <p>
+                {{ total_messages }}
+            </p>
+
+        </div>
+
+
+        <!-- Average Score -->
+
+        <div class="stat-card">
+
+            <h3>
+                Average Score
+            </h3>
+
+            <p>
+                {{ average_score }}
+                <small>/100</small>
+            </p>
+
+        </div>
+
+
+        <!-- High Priority -->
+
+        <div class="stat-card">
+
+            <h3>
+                High Priority
+            </h3>
+
+            <p>
+                {{ high_priority }}
+            </p>
+
+        </div>
+
+
+        <!-- Negative -->
+
+        <div class="stat-card">
+
+            <h3>
+                Negative Sentiment
+            </h3>
+
+            <p>
+                {{ negative_sentiment }}
+            </p>
+
+        </div>
+
+
+        <!-- Top Category -->
+
+        <div class="stat-card">
+
+            <h3>
+                Top Category
+            </h3>
+
+            <p class="stat-text">
+                {{ top_category_name }}
+            </p>
+
+            <span>
+                {{ top_category_count }} messages
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+     SENTIMENT ANALYTICS
+========================= -->
+
+<div class="analytics-chart-grid">
+
+    <div class="analytics-chart-card">
+
+        <div class="analytics-section-header">
+
+            <div>
+
+                <p class="detail-label">
+                    SENTIMENT
+                </p>
+
+                <h2>
+                    Sentiment Distribution
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas id="sentimentChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PRIORITY ANALYTICS
+    ========================= -->
+
+    <div class="analytics-chart-card">
+
+        <div class="analytics-section-header">
+
+            <div>
+
+                <p class="detail-label">
+                    PRIORITY
+                </p>
+
+                <h2>
+                    Priority Distribution
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas id="priorityChart"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- =========================
+         PRIORITY
+    ========================== -->
+
+    <div class="analytics-section">
+
+        <div class="analytics-section-header">
+
+            <div>
+
+                <p class="detail-label">
+                    PRIORITY ANALYSIS
+                </p>
+
+                <h2>
+                    Priority Distribution
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="analytics-list">
+
+            {% for item in priority_data %}
+
+            <div class="analytics-row">
+
+                <div class="analytics-row-info">
+
+                    <strong>
+                        {{ item["priority"] }}
+                    </strong>
+
+                    <span>
+                        {{ item["total"] }} messages
+                    </span>
+
+                </div>
+
+                <div class="analytics-row-bar">
+
+                    <div
+                        class="analytics-progress"
+                        style="width: {{
+                            (item['total'] / total_messages * 100)
+                            if total_messages else 0
+                        }}%;">
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <p>
+                No priority data available.
+            </p>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    // =========================
+    // SENTIMENT DATA
+    // =========================
+
+    const sentimentLabels =
+        {{ sentiment_data | map(attribute='sentiment') | list | tojson }};
+
+    const sentimentValues =
+        {{ sentiment_data | map(attribute='total') | list | tojson }};
+
+
+    // =========================
+    // PRIORITY DATA
+    // =========================
+
+    const priorityLabels =
+        {{ priority_data | map(attribute='priority') | list | tojson }};
+
+    const priorityValues =
+        {{ priority_data | map(attribute='total') | list | tojson }};
+
+
+    // =========================
+    // SENTIMENT CHART
+    // =========================
+
+    new Chart(
+        document.getElementById("sentimentChart"),
+        {
+            type: "doughnut",
+
+            data: {
+                labels: sentimentLabels,
+
+                datasets: [
+                    {
+                        data: sentimentValues
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
+                    }
+                }
+            }
+        }
+    );
+
+
+    // =========================
+    // PRIORITY CHART
+    // =========================
+
+    new Chart(
+        document.getElementById("priorityChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: priorityLabels,
+
+                datasets: [
+                    {
+                        label: "Messages",
+
+                        data: priorityValues
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        }
+    );
+
+</script>
+</body>
+</html>

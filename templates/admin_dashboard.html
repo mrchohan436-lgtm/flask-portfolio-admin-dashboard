@@ -1,0 +1,5638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="admin-header">
+
+        <div>
+            <h1>Admin Dashboard</h1>
+
+            <p>
+                Welcome to your admin panel.
+            </p>
+        </div>
+
+        <div class="admin-actions">
+
+    <!-- =========================
+         NOTIFICATIONS
+    ========================== -->
+
+    <div class="notification-wrapper">
+
+        <button type="button"
+                class="notification-btn"
+                title="Notifications">
+
+            <span class="notification-icon">
+                🔔
+            </span>
+
+            {% if new_messages > 0 %}
+                <span class="notification-badge">
+                    {{ new_messages }}
+                </span>
+            {% endif %}
+
+        </button>
+
+
+        <!-- Notification Dropdown -->
+
+        <div class="notification-dropdown">
+
+            <div class="notification-header">
+
+    <div>
+        <h3>Notifications</h3>
+
+        {% if new_messages > 0 %}
+            <span>
+                {{ new_messages }} New
+            </span>
+        {% endif %}
+    </div>
+
+    {% if notification_messages %}
+        <form method="POST"
+              action="{{ url_for('mark_all_notifications_read') }}">
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+            <button type="submit"
+                    class="mark-all-read-btn">
+                Mark All as Read
+            </button>
+
+        </form>
+    {% endif %}
+
+</div>
+
+            {% if new_messages > 0 %}
+
+                <div class="notification-list">
+
+                    {% for message in notification_messages %}
+
+                        <div class="notification-item">
+
+    <div class="notification-item-icon">
+        ✉
+    </div>
+
+
+    <div class="notification-item-content">
+
+        <strong>
+            New message from
+            {{ message["name"] }}
+        </strong>
+
+        <p>
+            {{ message["email"] }}
+        </p>
+
+        <small>
+            {{ message["created_at"] }}
+        </small>
+
+
+        <div class="notification-actions">
+
+            <!-- View Message -->
+
+            <a href="{{ url_for(
+                'view_message',
+                message_id=message['id']
+            ) }}"
+               class="notification-view-btn">
+                View
+            </a>
+
+
+            <!-- Mark as Read -->
+
+            <form method="POST"
+                  action="{{ url_for(
+                      'mark_notification_read',
+                      message_id=message['id']
+                  ) }}">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <button type="submit"
+                        class="notification-read-btn">
+                    Mark as Read
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="notification-footer">
+
+                    <a href="{{ url_for(
+                        'admin_messages',
+                        status='New'
+                    ) }}">
+                        View All New Messages →
+                    </a>
+
+                </div>
+
+            {% else %}
+
+                <div class="notification-empty">
+
+                    <div class="notification-empty-icon">
+                        ✓
+                    </div>
+
+                    <p>No new notifications</p>
+
+                    <small>
+                        You're all caught up.
+                    </small>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Messages -->
+
+    <a href="{{ url_for('admin_messages') }}"
+       class="btn">
+        Messages
+    </a>
+
+
+    <!-- Settings -->
+
+    <a href="{{ url_for('admin_settings') }}"
+       class="btn">
+        Settings
+    </a>
+
+
+    <!-- Logout -->
+
+    <a href="{{ url_for('admin_logout') }}"
+       class="btn btn-danger">
+        Logout
+    </a>
+
+</div>
+
+    </div>
+
+
+    <!-- =========================
+         STATISTICS
+    ========================== -->
+
+    <div class="dashboard-stats">
+
+    <!-- Total -->
+
+    <div class="stat-card">
+
+        <h3>Total Messages</h3>
+
+        <p id="total-messages-count">
+            {{ total_messages }}
+        </p>
+
+    </div>
+
+
+    
+<!-- New Messages - Clickable Card -->
+
+<a href="{{ url_for('admin_messages', status='pending') }}"
+   class="stat-card clickable-alert-card"
+   style="text-decoration: none; display: block;">
+
+    <h3>🔔 New Messages</h3>
+
+    <p id="new-messages-count">
+        {{ new_messages }}
+    </p>
+
+    <small>Click to view new messages →</small>
+
+</a>
+
+
+
+    <!-- Read -->
+
+    <div class="stat-card">
+
+        <h3>Read Messages</h3>
+
+        <p id="read-messages-count">
+            {{ read_messages }}
+        </p>
+
+    </div>
+
+
+    
+<!-- Pending Replies - Clickable Card -->
+
+<a href="{{ url_for('admin_messages', status='pending') }}"
+   class="stat-card clickable-alert-card"
+   style="text-decoration: none; display: block;">
+
+    <h3>⏳ Pending Replies</h3>
+
+    <p id="pending-replies-count">
+        {{ total_messages - replied_messages }}
+    </p>
+
+    <small>Click to view pending messages →</small>
+
+</a>
+
+
+</div>
+
+<!-- =========================
+     INTELLIGENCE OVERVIEW
+========================= -->
+
+<section class="intelligence-overview">
+
+    <div class="section-header">
+        <div>
+            <h2>🧠 Intelligence Overview</h2>
+            <p>Smart insights generated from your message data</p>
+        </div>
+
+        <span
+    class="intelligence-status"
+    id="intelligence-status">
+    {{ intelligence_status }}
+        </span>
+    </div>
+
+
+    <div class="intelligence-grid">
+
+        <!-- Dominant Sentiment -->
+
+        <div class="intelligence-card">
+
+            <div class="intelligence-icon">
+                💬
+            </div>
+
+            <div class="intelligence-content">
+
+                <span class="intelligence-label">
+                    Dominant Sentiment
+                </span>
+
+                <h3 id="intelligence-sentiment">
+                        {{ dominant_sentiment }}
+                </h3>
+
+                <p id="intelligence-sentiment-count">
+                    {{ dominant_sentiment_count }} messages
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Dominant Priority -->
+
+        <div class="intelligence-card">
+
+            <div class="intelligence-icon">
+                ⚡
+            </div>
+
+            <div class="intelligence-content">
+
+                <span class="intelligence-label">
+                    Dominant Priority
+                </span>
+
+                <h3 id="intelligence-priority">
+                        {{ dominant_priority }}
+                </h3>
+
+                <p id="intelligence-priority-count">
+                    {{ dominant_priority_count }}
+                    messages
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Reply Rate -->
+
+        <div class="intelligence-card">
+
+            <div class="intelligence-icon">
+                📩
+            </div>
+
+            <div class="intelligence-content">
+
+                <span class="intelligence-label">
+                    Reply Rate
+                </span>
+
+                <h3 id="intelligence-reply-rate">
+                        {{ reply_rate }}%
+                </h3>
+
+                <p id="intelligence-reply-count">
+                    {{ replied_messages }}
+                    replied messages
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Handling Rate -->
+
+        <div class="intelligence-card">
+
+            <div class="intelligence-icon">
+                📊
+            </div>
+
+            <div class="intelligence-content">
+
+                <span class="intelligence-label">
+                    Handling Rate
+                </span>
+
+                <h3 id="intelligence-handling-rate">
+                        {{ handling_rate }}%
+                </h3>
+
+                <p id="intelligence-handling-count">
+                    {{ handled_messages }}
+                    handled messages
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Message Trend -->
+
+<div class="intelligence-card">
+
+    <div class="intelligence-icon">
+        📈
+    </div>
+
+    <div class="intelligence-content">
+
+        <span class="intelligence-label">
+            Message Trend
+        </span>
+
+        <h3 id="intelligence-trend">
+    {{ message_trend }}
+</h3>
+
+<p id="intelligence-trend-percentage">
+    {% if trend_percentage > 0 %}
+        +{{ trend_percentage }}% vs previous 7 days
+    {% elif trend_percentage < 0 %}
+        {{ trend_percentage }}% vs previous 7 days
+    {% else %}
+        No significant change
+    {% endif %}
+</p>
+
+    </div>
+
+</div>
+
+
+<!-- Peak Activity -->
+
+<div class="intelligence-card">
+
+    <div class="intelligence-icon">
+        🕐
+    </div>
+
+    <div class="intelligence-content">
+
+        <span class="intelligence-label">
+            Peak Activity
+        </span>
+
+        <h3 id="intelligence-peak-day">
+                {{ peak_activity_day }}
+        </h3>
+
+        <p id="intelligence-peak-count">
+                {{ peak_activity_count }} messages
+        </p>
+
+    </div>
+
+</div>
+
+    </div>
+
+
+    <!-- Smart Recommendation -->
+
+    <div class="intelligence-message">
+
+        <div class="intelligence-message-icon">
+            💡
+        </div>
+
+        <div>
+
+            <h3>
+                Intelligence Insight
+            </h3>
+
+            <p id="intelligence-message">
+                    {{ intelligence_message }}
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================
+     SENTIMENT CHART
+========================= -->
+
+<div class="intelligence-chart-card">
+
+    <div class="chart-header">
+        <div>
+            <h3>📊 Sentiment Distribution</h3>
+            <p>Message sentiment breakdown</p>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="sentimentChart"></canvas>
+    </div>
+
+</div>  
+
+<!-- =========================
+     PRIORITY CHART
+========================= -->
+
+<div class="intelligence-chart-card">
+
+    <div class="chart-header">
+        <div>
+            <h3>⚡ Priority Distribution</h3>
+            <p>Message priority breakdown</p>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="priorityChart"></canvas>
+    </div>
+
+</div>
+<!-- =========================
+     MESSAGE TREND CHART
+========================= -->
+
+<div class="intelligence-chart-card">
+
+    <div class="chart-header">
+        <div>
+            <h3>📈 Message Activity Trend</h3>
+            <p>Recent message activity overview</p>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="messageTrendChart"></canvas>
+    </div>
+
+</div>
+
+<!-- =========================
+     ADVANCED ANALYTICS
+========================= -->
+
+<section class="advanced-analytics">
+
+    <div class="section-header">
+        <div>
+            <h2>📊 Advanced Analytics</h2>
+            <p>Detailed overview of your message activity</p>
+        </div>
+    </div>
+
+    <div class="analytics-grid">
+
+        <!-- Total Messages -->
+        <div class="analytics-card">
+            <div class="analytics-icon">📩</div>
+
+            <div>
+                <span>Total Messages</span>
+                <h3 id="analytics-total-messages">0</h3>
+            </div>
+        </div>
+
+        <!-- Unique Senders -->
+        <div class="analytics-card">
+            <div class="analytics-icon">👥</div>
+
+            <div>
+                <span>Unique Senders</span>
+                <h3 id="analytics-unique-senders">0</h3>
+            </div>
+        </div>
+
+        <!-- Active Days -->
+        <div class="analytics-card">
+            <div class="analytics-icon">📅</div>
+
+            <div>
+                <span>Active Days</span>
+                <h3 id="analytics-active-days">0</h3>
+            </div>
+        </div>
+
+        <!-- Average Messages -->
+        <div class="analytics-card">
+            <div class="analytics-icon">📈</div>
+
+            <div>
+                <span>Average Messages / Day</span>
+                <h3 id="analytics-average-messages">0</h3>
+            </div>
+        </div>
+
+        <!-- Recent 7 Days -->
+        <div class="analytics-card">
+            <div class="analytics-icon">🗓️</div>
+
+            <div>
+                <span>Recent 7 Days</span>
+                <h3 id="analytics-recent-7-days">0</h3>
+            </div>
+        </div>
+
+        <!-- Growth -->
+        <div class="analytics-card">
+            <div class="analytics-icon">🚀</div>
+
+            <div>
+                <span>Growth</span>
+                <h3 id="analytics-growth">0%</h3>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+<!-- =========================
+     ADVANCED MESSAGE INSIGHTS
+========================== -->
+
+<div class="admin-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Advanced Message Insights</h2>
+
+            <p>
+                Detailed analysis of your contact messages
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- INSIGHT CARDS -->
+
+    <div class="dashboard-stats">
+
+        <!-- Total Messages -->
+
+        <div class="stat-card">
+
+            <h3>Total Messages</h3>
+
+            <p id="insight-total-messages">
+                —
+            </p>
+
+        </div>
+
+
+        <!-- Unique Senders -->
+
+        <div class="stat-card">
+
+            <h3>Unique Senders</h3>
+
+            <p id="insight-unique-senders">
+                —
+            </p>
+
+        </div>
+
+
+        <!-- Repeat Senders -->
+
+        <div class="stat-card">
+
+            <h3>Repeat Senders</h3>
+
+            <p id="insight-repeat-senders">
+                —
+            </p>
+
+        </div>
+
+
+        <!-- Response Rate -->
+
+        <div class="stat-card">
+
+            <h3>Response Rate</h3>
+
+            <p id="insight-response-rate">
+                —
+            </p>
+
+        </div>
+
+    </div>
+
+
+    
+<!-- =========================
+     ACTIVITY ANALYTICS
+========================= -->
+
+<section class="admin-section activity-analytics-section"
+         id="activity-analytics-section">
+
+    <div class="section-header">
+        <div>
+            <h2>Activity Analytics</h2>
+            <p>Overview of admin activity and responses</p>
+        </div>
+    </div>
+
+    <div class="dashboard-stats">
+
+        <!-- Total Activities -->
+        <div class="stat-card">
+            <h3>Total Activities</h3>
+            <p id="total-activities-count">
+                {{ total_activities }}
+            </p>
+        </div>
+
+        <!-- Total Logins -->
+        <div class="stat-card">
+            <h3>Total Logins</h3>
+            <p id="total-logins-count">
+                {{ total_logins }}
+            </p>
+        </div>
+
+        <!-- Total Replies -->
+        <div class="stat-card">
+            <h3>Total Replies</h3>
+            <p id="total-replies-count">
+                {{ total_replies }}
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     MESSAGE ANALYTICS
+========================= -->
+
+<div class="dashboard-section message-analytics-section">
+
+    <!-- Header: Title + Export -->
+    <div class="analytics-header-row">
+
+        <div class="analytics-heading">
+            <h2>Message Analytics</h2>
+
+            <p>
+                Daily messages received over time.
+            </p>
+        </div>
+
+        <a href="{{ url_for('export_analytics', range='all') }}"
+           id="exportAnalyticsBtn"
+           class="analytics-export-btn">
+            <span aria-hidden="true">↧</span>
+            Export Analytics
+        </a>
+
+    </div>
+
+
+    <!-- Date Range Buttons -->
+    <div class="analytics-toolbar">
+
+        <div class="analytics-range-filter">
+
+            <button type="button"
+                    class="analytics-range-btn active"
+                    data-range="all">
+                All Time
+            </button>
+
+            <button type="button"
+                    class="analytics-range-btn"
+                    data-range="7">
+                7 Days
+            </button>
+
+            <button type="button"
+                    class="analytics-range-btn"
+                    data-range="30">
+                30 Days
+            </button>
+
+            <button type="button"
+                    class="analytics-range-btn"
+                    data-range="90">
+                90 Days
+            </button>
+
+        </div>
+
+
+        <!-- Custom Date Range -->
+        <div class="custom-date-range">
+
+            <div class="custom-date-field">
+                <label for="analyticsStartDate">From</label>
+
+                <input
+                    type="date"
+                    id="analyticsStartDate"
+                >
+            </div>
+
+            <div class="custom-date-field">
+                <label for="analyticsEndDate">To</label>
+
+                <input
+                    type="date"
+                    id="analyticsEndDate"
+                >
+            </div>
+
+            <button
+                type="button"
+                id="applyCustomRange">
+                Apply Dates
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- Analytics Chart -->
+    <div class="analytics-chart-container">
+
+        <canvas id="messageAnalyticsChart"></canvas>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================
+     MESSAGE STATUS ANALYTICS
+========================= -->
+
+<div class="dashboard-section">
+
+    <div class="section-header">
+
+        <h2>Message Status</h2>
+
+        <p>
+            Current distribution of message statuses.
+        </p>
+
+    </div>
+
+    <div style="
+        position: relative;
+        width: 100%;
+        height: 350px;
+    ">
+
+        <canvas id="messageStatusChart"></canvas>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     ANALYTICS METRICS
+========================= -->
+
+<div class="analytics-metrics-grid">
+
+    <!-- Average Messages -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+            <h2>Average Messages</h2>
+            <p>Average number of messages received per active day.</p>
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Average Messages / Day</h3>
+
+            <p id="averageMessages">
+                0
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Response Rate -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+            <h2>Response Rate</h2>
+            <p>Percentage of messages that have received a reply.</p>
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Response Rate</h3>
+
+            <p id="responseRate">
+                0%
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Message Growth -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Message Growth</h2>
+
+            <p>
+                Compare messages with the previous period.
+            </p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Growth Trend</h3>
+
+            <p id="messageGrowth">
+                Loading...
+            </p>
+
+            <span id="growthComparison">
+                Comparing...
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- Message Growth Chart -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Message Growth Trend</h2>
+
+            <p>
+                Daily message activity over the selected period.
+            </p>
+
+        </div>
+
+        <div class="analytics-chart-container">
+
+            <canvas id="messageGrowthChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- Top Contact Days -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Top Contact Days</h2>
+
+            <p>
+                Days of the week with the highest message activity.
+            </p>
+
+        </div>
+
+        <div class="analytics-chart-container">
+
+            <canvas id="topContactDaysChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- Message Status Distribution -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Message Status Distribution</h2>
+
+            <p>
+                Distribution of messages by their current status.
+            </p>
+
+        </div>
+
+        <div class="analytics-chart-container">
+
+            <canvas id="statusDistributionChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <!-- Response Time Analytics -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Response Time Analytics</h2>
+
+            <p>
+                Analyze how quickly messages are being answered.
+            </p>
+
+        </div>
+
+        <div class="dashboard-stats">
+
+            <div class="stat-card">
+
+                <h3>Average Response</h3>
+
+                <p id="averageResponseTime">
+                    Loading...
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <h3>Fastest Response</h3>
+
+                <p id="fastestResponseTime">
+                    Loading...
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <h3>Slowest Response</h3>
+
+                <p id="slowestResponseTime">
+                    Loading...
+                </p>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <h3>Total Responses</h3>
+
+                <p id="totalResponses">
+                    Loading...
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Most Active Day -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Most Active Day</h2>
+
+            <p>
+                Date with the highest number of messages received.
+            </p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Most Active Day</h3>
+
+            <p id="mostActiveDay">
+                Loading...
+            </p>
+
+            <span id="mostActiveDayCount">
+                0 Messages
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- Peak Message Hour -->
+
+    <div class="dashboard-section">
+
+        <div class="section-header">
+
+            <h2>Peak Message Hour</h2>
+
+            <p>
+                Hour when the highest number of messages are received.
+            </p>
+
+        </div>
+
+        <div class="stat-card">
+
+            <h3>Peak Hour</h3>
+
+            <p id="peakMessageHour">
+                Loading...
+            </p>
+
+            <span id="peakMessageHourCount">
+                0 Messages
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     QUICK ACTIONS
+========================= -->
+
+<div class="dashboard-section">
+
+    <div class="section-header">
+
+        <h2>Quick Actions</h2>
+
+    </div>
+
+    <div class="quick-actions">
+
+        <a href="{{ url_for('admin_messages', status='New') }}"
+           class="quick-action-card">
+
+            <div class="quick-action-icon">
+                ✉
+            </div>
+
+            <div class="quick-action-content">
+
+                <h3>New Messages</h3>
+
+                <p>
+                    View messages that need attention.
+                </p>
+
+                <span>
+                    {{ new_messages }} New
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_messages') }}"
+           class="quick-action-card">
+
+            <div class="quick-action-icon">
+                ≡
+            </div>
+
+            <div class="quick-action-content">
+
+                <h3>All Messages</h3>
+
+                <p>
+                    Manage all contact messages.
+                </p>
+
+                <span>
+                    {{ total_messages }} Total
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_activity_log') }}"
+           class="quick-action-card">
+
+            <div class="quick-action-icon">
+                ◷
+            </div>
+
+            <div class="quick-action-content">
+
+                <h3>Activity Log</h3>
+
+                <p>
+                    Review recent admin activities.
+                </p>
+
+                <span>
+                    {{ total_activities }} Activities
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <a href="{{ url_for('admin_settings') }}"
+           class="quick-action-card">
+
+            <div class="quick-action-icon">
+                ⚙
+            </div>
+
+            <div class="quick-action-content">
+
+                <h3>Settings</h3>
+
+                <p>
+                    Manage your admin settings.
+                </p>
+
+                <span>
+                    Open Settings
+                </span>
+
+            </div>
+
+        </a>
+
+    </div>
+
+</div>
+    <!-- =========================
+     RECENT ACTIVITY
+========================= -->
+
+<div class="dashboard-section" id="recent-activity-section">
+
+    <div class="section-header">
+
+        <h2>Recent Activity</h2>
+
+        <a href="{{ url_for('admin_activity_log') }}">
+            View All
+        </a>
+
+    </div>
+
+    {% if recent_activities %}
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th>Message ID</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for activity in recent_activities %}
+
+<tr>
+
+    <td>
+        {{ activity["action"] }}
+    </td>
+
+    <td>
+        {{ activity["description"] or "—" }}
+    </td>
+
+    <td>
+        {% if activity["message_id"] %}
+            #{{ activity["message_id"] }}
+        {% else %}
+            —
+        {% endif %}
+    </td>
+
+    <td>
+        {{ activity["created_at"] }}
+    </td>
+
+    <!-- YAHAN PASTE KAREIN -->
+    <td>
+
+        <a href="{{ url_for(
+            'activity_log_detail',
+            log_id=activity['id']
+        ) }}"
+           class="view-message-btn">
+            Details
+        </a>
+
+        {% if activity["message_id"] %}
+
+            <a href="{{ url_for(
+                'view_message',
+                message_id=activity['message_id']
+            ) }}"
+               class="view-message-btn">
+                View Message
+            </a>
+
+        {% endif %}
+
+    </td>
+
+</tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+        <p>No activity available.</p>
+
+    {% endif %}
+
+</div>
+
+    <!-- =========================
+         RECENT MESSAGES
+    ========================== -->
+
+    <div class="dashboard-section recent-messages-section" id="recent-messages-section">
+
+        <div class="section-header">
+
+            <h2>Recent Messages</h2>
+
+            <a href="{{ url_for('admin_messages') }}">
+                View All
+            </a>
+
+        </div>
+
+
+        {% if recent_messages %}
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Name</th>
+
+                        <th>Email</th>
+
+                        <th>Status</th>
+
+                        <th>Date</th>
+
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for message in recent_messages %}
+
+                    <tr>
+
+                        <td>
+                            #{{ message["id"] }}
+                        </td>
+
+                        <td>
+                            {{ message["name"] }}
+                        </td>
+
+                        <td>
+                            {{ message["email"] }}
+                        </td>
+
+                        <td>
+
+                            <span class="status
+                                status-{{ message['status']|lower }}">
+                                {{ message["status"] }}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            {{ message["created_at"] }}
+                        </td>
+
+                        <td>
+
+                            <a href="{{ url_for(
+                                'view_message',
+                                message_id=message['id']
+                            ) }}">
+                                View
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <p>
+            No messages available.
+        </p>
+
+        {% endif %}
+
+    </div>
+
+    <!-- =========================
+     MONTHLY ANALYTICS
+========================= -->
+
+<div class="dashboard-section monthly-analytics-section">
+
+    <div class="section-header">
+
+        <h2>Monthly Messages</h2>
+
+        <p>
+            Messages received month by month.
+        </p>
+
+    </div>
+
+    <div style="
+        position: relative;
+        width: 100%;
+        height: 350px;
+    ">
+
+        <canvas id="monthlyAnalyticsChart"></canvas>
+
+    </div>
+
+</div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const notificationBtn =
+            document.querySelector(".notification-btn");
+
+        const notificationDropdown =
+            document.querySelector(".notification-dropdown");
+
+        const notificationWrapper =
+            document.querySelector(".notification-wrapper");
+
+
+        if (!notificationBtn || !notificationDropdown) {
+            return;
+        }
+
+
+        notificationBtn.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            notificationDropdown.classList.toggle(
+                "notification-dropdown-show"
+            );
+
+        });
+
+
+        document.addEventListener("click", function (event) {
+
+            if (!notificationWrapper.contains(event.target)) {
+
+                notificationDropdown.classList.remove(
+                    "notification-dropdown-show"
+                );
+
+            }
+
+        });
+
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const notificationBadge =
+            document.querySelector(".notification-badge");
+
+        const notificationDropdown =
+            document.querySelector(".notification-dropdown");
+
+        async function refreshNotifications() {
+
+            try {
+
+                const response = await fetch(
+                    "{{ url_for('notification_data') }}"
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+
+                /*
+                 * =========================
+                 * UPDATE BADGE
+                 * =========================
+                 */
+
+                let badge =
+                    document.querySelector(".notification-badge");
+
+                const notificationBtn =
+                    document.querySelector(".notification-btn");
+
+                if (data.count > 0) {
+
+                    if (!badge) {
+
+                        badge =
+                            document.createElement("span");
+
+                        badge.className =
+                            "notification-badge";
+
+                        notificationBtn.appendChild(badge);
+                    }
+
+                    badge.textContent = data.count;
+
+                } else {
+
+                    if (badge) {
+                        badge.remove();
+                    }
+                }
+
+
+                /*
+                 * =========================
+                 * UPDATE NOTIFICATION LIST
+                 * =========================
+                 */
+
+                const notificationList =
+                    document.querySelector(".notification-list");
+
+                if (!notificationList) {
+                    return;
+                }
+
+                notificationList.innerHTML = "";
+
+
+                /*
+                 * NO NEW NOTIFICATIONS
+                 */
+
+                if (data.notifications.length === 0) {
+
+                    notificationList.innerHTML = `
+                        <div class="notification-empty">
+
+                            <div class="notification-empty-icon">
+                                ✓
+                            </div>
+
+                            <p>No new notifications</p>
+
+                            <small>
+                                You're all caught up.
+                            </small>
+
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                /*
+                 * CREATE NOTIFICATION ITEMS
+                 */
+
+                data.notifications.forEach(function (message) {
+
+                    const item =
+                        document.createElement("div");
+
+                    item.className =
+                        "notification-item";
+
+                    item.innerHTML = `
+
+    <div class="notification-item-icon">
+        ✉
+    </div>
+
+    <div class="notification-item-content">
+
+        <strong>
+            New message from
+            ${escapeHtml(message.name || "Unknown")}
+        </strong>
+
+        <p>
+            ${escapeHtml(message.email || "No email")}
+        </p>
+
+        <small>
+            ${escapeHtml(message.created_at || "")}
+        </small>
+
+        <div class="notification-actions">
+
+            <a href="/admin/messages/${message.id}"
+               class="notification-view-btn">
+                View
+            </a>
+
+            <form method="POST"
+                  action="/admin/notifications/${message.id}/read">
+
+                <input type="hidden"
+                       name="csrf_token"
+                       value="{{ csrf_token() }}">
+
+                <button type="submit"
+                        class="notification-read-btn">
+                    Mark as Read
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    `;
+                            
+
+                    notificationList.appendChild(item);
+
+                });
+
+            } catch (error) {
+
+                console.log(
+                    "Notification refresh error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        /*
+         * =========================
+         * HTML ESCAPE
+         * =========================
+         */
+
+        function escapeHtml(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent = value;
+
+            return div.innerHTML;
+        }
+
+
+        /*
+         * =========================
+         * AUTO REFRESH
+         * =========================
+         */
+
+        setInterval(
+            refreshNotifications,
+            5000
+        );
+
+    });
+
+            /*
+         * =========================
+         * LIVE MARK AS READ
+         * =========================
+         */
+
+        document.addEventListener("click", async function (event) {
+
+            const button =
+                event.target.closest(".notification-read-btn");
+
+            if (!button) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const form = button.closest("form");
+
+            if (!form) {
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Reading...";
+
+            try {
+
+                const response = await fetch(
+                    form.action,
+                    {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        },
+                        body: new FormData(form)
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    button.disabled = false;
+                    button.textContent = "Mark as Read";
+                    return;
+                }
+
+                /*
+                 * Remove notification immediately
+                 */
+
+                const notificationItem =
+                    button.closest(".notification-item");
+
+                if (notificationItem) {
+                    notificationItem.remove();
+                }
+
+                /*
+                 * Update badge
+                 */
+
+                const badge =
+                    document.querySelector(".notification-badge");
+
+                if (data.count > 0) {
+
+                    if (badge) {
+                        badge.textContent = data.count;
+                    }
+
+                } else {
+
+                    if (badge) {
+                        badge.remove();
+                    }
+
+                    /*
+                     * Show empty state
+                     */
+
+                    const notificationList =
+                        document.querySelector(
+                            ".notification-list"
+                        );
+
+                    if (notificationList) {
+
+                        notificationList.innerHTML = `
+                            <div class="notification-empty">
+
+                                <div class="notification-empty-icon">
+                                    ✓
+                                </div>
+
+                                <p>
+                                    No new notifications
+                                </p>
+
+                                <small>
+                                    You're all caught up.
+                                </small>
+
+                            </div>
+                        `;
+                    }
+                }
+
+            } catch (error) {
+
+                console.log(
+                    "Mark as read error:",
+                    error
+                );
+
+                button.disabled = false;
+                button.textContent = "Mark as Read";
+            }
+
+        });
+
+        /*
+ * =========================
+ * LIVE MARK ALL AS READ
+ * =========================
+ */
+
+document.addEventListener("submit", async function (event) {
+
+    const form = event.target.closest(
+        'form[action="{{ url_for("mark_all_notifications_read") }}"]'
+    );
+
+    if (!form) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const button =
+        form.querySelector(".mark-all-read-btn");
+
+    if (!button) {
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Marking...";
+
+    try {
+
+        const response = await fetch(
+            form.action,
+            {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: new FormData(form)
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+            button.disabled = false;
+            button.textContent = "Mark All as Read";
+            return;
+        }
+
+        /*
+         * Remove notification badge
+         */
+
+        const badge =
+            document.querySelector(".notification-badge");
+
+        if (badge) {
+            badge.remove();
+        }
+
+        /*
+         * Remove all notification items
+         */
+
+        const notificationList =
+            document.querySelector(".notification-list");
+
+        if (notificationList) {
+
+            notificationList.innerHTML = `
+
+                <div class="notification-empty">
+
+                    <div class="notification-empty-icon">
+                        ✓
+                    </div>
+
+                    <p>
+                        No new notifications
+                    </p>
+
+                    <small>
+                        You're all caught up.
+                    </small>
+
+                </div>
+
+            `;
+        }
+
+        /*
+         * Remove Mark All button
+         */
+
+        form.remove();
+
+        /*
+         * Update notification header
+         */
+
+        const notificationHeader =
+            document.querySelector(".notification-header");
+
+        if (notificationHeader) {
+
+            const newCount =
+                notificationHeader.querySelector("span");
+
+            if (newCount) {
+                newCount.remove();
+            }
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Mark all as read error:",
+            error
+        );
+
+        button.disabled = false;
+        button.textContent = "Mark All as Read";
+    }
+
+});
+
+</script>
+
+<script>
+    /*
+     * =========================
+     * LIVE RECENT MESSAGES
+     * =========================
+     */
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        async function refreshRecentMessages() {
+
+            try {
+
+                const response = await fetch(
+                    "{{ url_for('recent_messages_data') }}"
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+
+                const recentSection =
+    document.querySelector(
+        "#recent-messages-section"
+    );
+
+if (!recentSection) {
+    return;
+}
+
+const tableWrapper =
+    recentSection.querySelector(
+        ".table-wrapper"
+    );
+
+                if (!tableWrapper) {
+                    return;
+                }
+
+                const tbody =
+                    tableWrapper.querySelector("tbody");
+
+                if (!tbody) {
+                    return;
+                }
+
+                /*
+                 * Clear current rows
+                 */
+
+                tbody.innerHTML = "";
+
+                /*
+                 * No messages
+                 */
+
+                if (data.messages.length === 0) {
+
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6"
+                                style="text-align: center;">
+                                No messages available.
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                /*
+                 * Add latest messages
+                 */
+
+                data.messages.forEach(function (message) {
+
+                    const row =
+                        document.createElement("tr");
+
+                    const statusClass =
+                        message.status.toLowerCase();
+
+                    row.innerHTML = `
+
+                        <td>
+                            #${message.id}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(message.name)}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(message.email)}
+                        </td>
+
+                        <td>
+
+                            <span class="status status-${statusClass}">
+                                ${escapeHtml(message.status)}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            ${escapeHtml(message.created_at)}
+                        </td>
+
+                        <td>
+
+                            <a href="/admin/messages/${message.id}">
+                                View
+                            </a>
+
+                        </td>
+                    `;
+
+                    tbody.appendChild(row);
+
+                });
+
+            } catch (error) {
+
+                console.log(
+                    "Recent messages refresh error:",
+                    error
+                );
+
+            }
+
+        }
+
+        /*
+         * Prevent HTML injection
+         */
+
+        function escapeHtml(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent = value;
+
+            return div.innerHTML;
+        }
+
+        /*
+         * Refresh every 5 seconds
+         */
+
+        setInterval(
+            refreshRecentMessages,
+            5000
+        );
+
+    });
+</script>
+
+<script>
+    /*
+     * =========================
+     * LIVE RECENT ACTIVITY
+     * =========================
+     */
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        async function refreshRecentActivity() {
+
+            try {
+
+                const response = await fetch(
+                    "{{ url_for('recent_activity_data') }}"
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+
+                const recentSection =
+                    document.querySelector(
+                        "#recent-activity-section"
+                    );
+
+                if (!recentSection) {
+                    return;
+                }
+
+                const tableWrapper =
+                    recentSection.querySelector(
+                        ".table-wrapper"
+                    );
+
+                if (!tableWrapper) {
+                    return;
+                }
+
+                const tbody =
+                    tableWrapper.querySelector("tbody");
+
+                if (!tbody) {
+                    return;
+                }
+
+                tbody.innerHTML = "";
+
+                if (data.activities.length === 0) {
+
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5"
+                                style="text-align: center;">
+                                No activity available.
+                            </td>
+                        </tr>
+                    `;
+
+                    return;
+                }
+
+                data.activities.forEach(function (activity) {
+
+                    const row =
+                        document.createElement("tr");
+
+                    let actions = `
+                        <a href="/admin/activity-log/${activity.id}"
+                           class="view-message-btn">
+                            Details
+                        </a>
+                    `;
+
+                    if (activity.message_id) {
+
+                        actions += `
+                            <a href="/admin/messages/${activity.message_id}"
+                               class="view-message-btn">
+                                View Message
+                            </a>
+                        `;
+                    }
+
+                    row.innerHTML = `
+
+                        <td>
+                            ${escapeHtml(activity.action)}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                activity.description || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${
+                                activity.message_id
+                                ? "#" + activity.message_id
+                                : "—"
+                            }
+                        </td>
+
+                        <td>
+                            ${escapeHtml(activity.created_at)}
+                        </td>
+
+                        <td>
+                            ${actions}
+                        </td>
+
+                    `;
+
+                    tbody.appendChild(row);
+
+                });
+
+            } catch (error) {
+
+                console.log(
+                    "Recent activity refresh error:",
+                    error
+                );
+
+            }
+
+        }
+
+        function escapeHtml(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent = value;
+
+            return div.innerHTML;
+        }
+
+        /*
+         * Refresh every 5 seconds
+         */
+
+        // Refresh immediately when the page loads
+refreshRecentActivity();
+
+// Then refresh every 5 seconds
+setInterval(refreshRecentActivity, 5000);
+
+    });
+</script>
+
+<script>
+    /*
+     * =========================
+     * LIVE DASHBOARD STATS
+     * =========================
+     */
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        async function refreshDashboardStats() {
+
+            try {
+
+                const response = await fetch(
+                    "{{ url_for('dashboard_stats') }}"
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+
+                /*
+                 * Total Messages
+                 */
+
+                const totalMessages =
+                    document.querySelector(
+                        "#total-messages-count"
+                    );
+
+                if (totalMessages) {
+                    totalMessages.textContent =
+                        data.total_messages;
+                }
+
+                /*
+                 * New Messages
+                 */
+
+                const newMessages =
+                    document.querySelector(
+                        "#new-messages-count"
+                    );
+
+                if (newMessages) {
+                    newMessages.textContent =
+                        data.new_messages;
+                }
+
+                /*
+                 * Read Messages
+                 */
+
+                const readMessages =
+                    document.querySelector(
+                        "#read-messages-count"
+                    );
+
+                if (readMessages) {
+                    readMessages.textContent =
+                        data.read_messages;
+                }
+
+                /*
+                 * Replied Messages
+                 */
+
+                const repliedMessages =
+                    document.querySelector(
+                        "#replied-messages-count"
+                    );
+
+                if (repliedMessages) {
+                    repliedMessages.textContent =
+                        data.replied_messages;
+                }
+
+   /*
+ * Pending Replies
+ */
+
+const pendingReplies =
+    document.getElementById("pending-replies-count");
+
+if (pendingReplies) {
+    pendingReplies.textContent =
+        data.pending_replies;
+}
+                
+// =========================
+// ACTIVITY ANALYTICS
+// =========================
+
+const totalActivities =
+    document.getElementById("total-activities-count");
+
+if (totalActivities) {
+    totalActivities.textContent = data.total_activities;
+}
+
+const totalLogins =
+    document.getElementById("total-logins-count");
+
+if (totalLogins) {
+    totalLogins.textContent = data.total_logins;
+}
+
+const totalReplies =
+    document.getElementById("total-replies-count");
+
+if (totalReplies) {
+    totalReplies.textContent = data.total_replies;
+}
+
+            } catch (error) {
+
+                console.log(
+                    "Dashboard stats refresh error:",
+                    error
+                );
+
+            }
+
+        }
+
+        /*
+         * Refresh every 5 seconds
+         */
+
+        refreshDashboardStats();
+setInterval(refreshDashboardStats, 5000);
+
+    });
+</script>
+
+<!-- =========================
+     MESSAGE ANALYTICS CHART
+========================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    let messageAnalyticsChart = null;
+
+    let selectedRange = "all";
+
+    let customStartDate = "";
+    let customEndDate = "";
+
+
+    async function loadMessageAnalytics() {
+
+        try {
+
+            let analyticsUrl =
+                "{{ url_for('dashboard_analytics') }}";
+
+            /*
+             * =========================
+             * BUILD ANALYTICS URL
+             * =========================
+             */
+
+            if (
+                selectedRange === "custom" &&
+                customStartDate &&
+                customEndDate
+            ) {
+
+                analyticsUrl +=
+                    "?start_date=" +
+                    encodeURIComponent(customStartDate) +
+                    "&end_date=" +
+                    encodeURIComponent(customEndDate);
+
+            }
+
+            else {
+
+                analyticsUrl +=
+                    "?range=" +
+                    encodeURIComponent(selectedRange);
+
+            }
+
+
+            /*
+             * =========================
+             * FETCH ANALYTICS
+             * =========================
+             */
+
+            const response =
+                await fetch(analyticsUrl);
+
+
+            /*
+             * =========================
+             * UPDATE EXPORT BUTTON
+             * =========================
+             */
+
+            const exportButton =
+                document.getElementById(
+                    "exportAnalyticsBtn"
+                );
+
+            if (exportButton) {
+
+                if (
+                    selectedRange === "custom" &&
+                    customStartDate &&
+                    customEndDate
+                ) {
+
+                    exportButton.href =
+                        "{{ url_for('export_analytics') }}" +
+                        "?start_date=" +
+                        encodeURIComponent(
+                            customStartDate
+                        ) +
+                        "&end_date=" +
+                        encodeURIComponent(
+                            customEndDate
+                        );
+
+                }
+
+                else {
+
+                    exportButton.href =
+                        "{{ url_for('export_analytics') }}" +
+                        "?range=" +
+                        encodeURIComponent(
+                            selectedRange
+                        );
+
+                }
+
+            }
+
+
+            if (!response.ok) {
+                return;
+            }
+
+
+            const data =
+                await response.json();
+
+
+            /*
+             * =========================
+             * CHART DATA
+             * =========================
+             */
+
+            const labels =
+                data.daily_messages.map(
+                    item => item.date
+                );
+
+            const values =
+                data.daily_messages.map(
+                    item => item.count
+                );
+
+
+            const canvas =
+                document.getElementById(
+                    "messageAnalyticsChart"
+                );
+
+
+            if (!canvas) {
+                return;
+            }
+
+
+            /*
+             * =========================
+             * CREATE CHART
+             * =========================
+             */
+
+            if (!messageAnalyticsChart) {
+
+                messageAnalyticsChart =
+                    new Chart(canvas, {
+
+                        type: "line",
+
+                        data: {
+
+                            labels: labels,
+
+                            datasets: [
+
+                                {
+                                    label: "Messages",
+
+                                    data: values,
+
+                                    tension: 0.3,
+
+                                    fill: true
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive: true,
+
+                            maintainAspectRatio: false,
+
+                            plugins: {
+
+                                legend: {
+                                    display: true
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero: true,
+
+                                    ticks: {
+                                        precision: 0
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    });
+
+            }
+
+
+            /*
+             * =========================
+             * UPDATE EXISTING CHART
+             * =========================
+             */
+
+            else {
+
+                messageAnalyticsChart.data.labels =
+                    labels;
+
+                messageAnalyticsChart.data.datasets[0].data =
+                    values;
+
+                messageAnalyticsChart.update();
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Analytics chart error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+     * =========================
+     * RANGE BUTTONS
+     * =========================
+     */
+
+    const rangeButtons =
+        document.querySelectorAll(
+            ".analytics-range-btn"
+        );
+
+
+    rangeButtons.forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                selectedRange =
+                    this.dataset.range;
+
+                customStartDate = "";
+                customEndDate = "";
+
+
+                rangeButtons.forEach(
+                    function (btn) {
+
+                        btn.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+
+                this.classList.add("active");
+
+
+                loadMessageAnalytics();
+
+            }
+        );
+
+    });
+
+
+    /*
+     * =========================
+     * CUSTOM DATE RANGE
+     * =========================
+     */
+
+    const applyCustomRange =
+        document.getElementById(
+            "applyCustomRange"
+        );
+
+
+    if (applyCustomRange) {
+
+        applyCustomRange.addEventListener(
+            "click",
+            function () {
+
+                const startDate =
+                    document.getElementById(
+                        "analyticsStartDate"
+                    ).value;
+
+                const endDate =
+                    document.getElementById(
+                        "analyticsEndDate"
+                    ).value;
+
+
+                if (!startDate || !endDate) {
+
+                    alert(
+                        "Please select both start and end dates."
+                    );
+
+                    return;
+                }
+
+
+                if (startDate > endDate) {
+
+                    alert(
+                        "Start date cannot be after end date."
+                    );
+
+                    return;
+                }
+
+
+                customStartDate =
+                    startDate;
+
+                customEndDate =
+                    endDate;
+
+                selectedRange =
+                    "custom";
+
+
+                /*
+                 * Remove active state
+                 * from preset buttons
+                 */
+
+                rangeButtons.forEach(
+                    function (btn) {
+
+                        btn.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+
+                /*
+                 * Load custom range
+                 */
+
+                loadMessageAnalytics();
+
+            }
+        );
+
+    }
+
+
+    /*
+     * =========================
+     * INITIAL LOAD
+     * =========================
+     */
+
+    loadMessageAnalytics();
+
+
+    /*
+     * =========================
+     * LIVE UPDATE
+     * =========================
+     */
+
+    setInterval(
+        loadMessageAnalytics,
+        5000
+    );
+
+});
+
+</script>
+<!-- =========================
+     MESSAGE STATUS CHART
+========================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    let messageStatusChart = null;
+
+
+    async function loadMessageStatusChart() {
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('message_status_analytics') }}"
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            const labels = data.status_data.map(
+                item => item.status
+            );
+
+            const values = data.status_data.map(
+                item => item.count
+            );
+
+            const canvas =
+                document.getElementById(
+                    "messageStatusChart"
+                );
+
+            if (!canvas) {
+                return;
+            }
+
+
+            /*
+             * CREATE CHART FIRST TIME
+             */
+
+            if (!messageStatusChart) {
+
+                messageStatusChart = new Chart(canvas, {
+
+                    type: "doughnut",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [
+
+                            {
+                                label: "Messages",
+                                data: values
+                            }
+
+                        ]
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                display: true,
+                                position: "bottom"
+                            }
+
+                        }
+
+                    }
+
+                });
+
+            }
+
+
+            /*
+             * UPDATE EXISTING CHART
+             */
+
+            else {
+
+                messageStatusChart.data.labels =
+                    labels;
+
+                messageStatusChart.data.datasets[0].data =
+                    values;
+
+                messageStatusChart.update();
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Message status chart error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+     * INITIAL LOAD
+     */
+
+    loadMessageStatusChart();
+
+
+    /*
+     * LIVE UPDATE
+     */
+
+    setInterval(
+        loadMessageStatusChart,
+        5000
+    );
+
+});
+
+</script>
+
+<!-- =========================
+     MONTHLY ANALYTICS SCRIPT
+========================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    let monthlyAnalyticsChart = null;
+
+
+    async function loadMonthlyAnalytics() {
+
+        try {
+
+            const response = await fetch(
+                "{{ url_for('monthly_analytics') }}"
+            );
+
+            if (!response.ok) {
+                console.log(
+                    "Monthly analytics request failed"
+                );
+                return;
+            }
+
+            const data = await response.json();
+
+
+            const canvas =
+                document.getElementById(
+                    "monthlyAnalyticsChart"
+                );
+
+            if (!canvas) {
+                return;
+            }
+
+
+            /*
+             * CREATE CHART FIRST TIME
+             */
+
+            if (!monthlyAnalyticsChart) {
+
+                monthlyAnalyticsChart = new Chart(
+                    canvas,
+                    {
+
+                        type: "line",
+
+                        data: {
+
+                            labels: data.labels,
+
+                            datasets: [
+
+                                {
+                                    label: "Messages",
+
+                                    data: data.data,
+
+                                    tension: 0.4,
+
+                                    fill: false,
+
+                                    borderWidth: 2,
+
+                                    pointRadius: 4,
+
+                                    pointHoverRadius: 6
+
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive: true,
+
+                            maintainAspectRatio: false,
+
+                            interaction: {
+
+                                mode: "index",
+
+                                intersect: false
+
+                            },
+
+                            plugins: {
+
+                                legend: {
+
+                                    display: true,
+
+                                    position: "bottom"
+
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero: true,
+
+                                    ticks: {
+
+                                        precision: 0
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+            }
+
+
+            /*
+             * UPDATE EXISTING CHART
+             */
+
+            else {
+
+                monthlyAnalyticsChart.data.labels =
+                    data.labels;
+
+                monthlyAnalyticsChart.data.datasets[0].data =
+                    data.data;
+
+                monthlyAnalyticsChart.update();
+
+            }
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Monthly analytics error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+     * INITIAL LOAD
+     */
+
+    loadMonthlyAnalytics();
+
+
+    /*
+     * LIVE UPDATE
+     */
+
+    setInterval(
+        loadMonthlyAnalytics,
+        5000
+    );
+
+});
+
+</script>
+
+<!-- =========================
+     AVERAGE MESSAGES
+========================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    async function loadAverageMessages() {
+
+        try {
+
+            const activeRange =
+                document.querySelector(
+                    ".analytics-range-btn.active"
+                );
+
+            let requestUrl;
+
+            /*
+             * PREDEFINED RANGE
+             */
+
+            if (activeRange) {
+
+                const selectedRange =
+                    activeRange.dataset.range;
+
+                requestUrl =
+                    "{{ url_for('message_average') }}" +
+                    "?range=" +
+                    encodeURIComponent(
+                        selectedRange
+                    );
+            }
+
+            /*
+             * CUSTOM DATE RANGE
+             */
+
+            else {
+
+                const startDateElement =
+                    document.getElementById(
+                        "analyticsStartDate"
+                    );
+
+                const endDateElement =
+                    document.getElementById(
+                        "analyticsEndDate"
+                    );
+
+                const startDate =
+                    startDateElement
+                        ? startDateElement.value
+                        : "";
+
+                const endDate =
+                    endDateElement
+                        ? endDateElement.value
+                        : "";
+
+                if (!startDate || !endDate) {
+                    return;
+                }
+
+                requestUrl =
+                    "{{ url_for('message_average') }}" +
+                    "?start_date=" +
+                    encodeURIComponent(
+                        startDate
+                    ) +
+                    "&end_date=" +
+                    encodeURIComponent(
+                        endDate
+                    );
+            }
+
+            const response =
+                await fetch(requestUrl);
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data =
+                await response.json();
+
+            const averageElement =
+                document.getElementById(
+                    "averageMessages"
+                );
+
+            if (!averageElement) {
+                return;
+            }
+
+            averageElement.textContent =
+                data.average_messages;
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "Average messages error:",
+                error
+            );
+
+        }
+
+    }
+
+    loadAverageMessages();
+
+    setInterval(
+        loadAverageMessages,
+        5000
+    );
+
+});
+
+</script>
+
+<!-- =========================
+     RESPONSE RATE
+========================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    async function loadResponseRate() {
+
+    try {
+
+        const activeRange =
+            document.querySelector(
+                ".analytics-range-btn.active"
+            );
+
+        let requestUrl;
+
+        /*
+         * PREDEFINED RANGE
+         */
+
+        if (activeRange) {
+
+            const selectedRange =
+                activeRange.dataset.range;
+
+            requestUrl =
+                "{{ url_for('message_response_rate') }}" +
+                "?range=" +
+                encodeURIComponent(
+                    selectedRange
+                );
+        }
+
+        /*
+         * CUSTOM DATE RANGE
+         */
+
+        else {
+
+            const startDateElement =
+                document.getElementById(
+                    "analyticsStartDate"
+                );
+
+            const endDateElement =
+                document.getElementById(
+                    "analyticsEndDate"
+                );
+
+            const startDate =
+                startDateElement
+                    ? startDateElement.value
+                    : "";
+
+            const endDate =
+                endDateElement
+                    ? endDateElement.value
+                    : "";
+
+            if (!startDate || !endDate) {
+                return;
+            }
+
+            requestUrl =
+                "{{ url_for('message_response_rate') }}" +
+                "?start_date=" +
+                encodeURIComponent(
+                    startDate
+                ) +
+                "&end_date=" +
+                encodeURIComponent(
+                    endDate
+                );
+        }
+
+        const response =
+            await fetch(requestUrl);
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        const responseElement =
+            document.getElementById(
+                "responseRate"
+            );
+
+        if (!responseElement) {
+            return;
+        }
+
+        responseElement.textContent =
+            data.response_rate + "%";
+
+    }
+
+    catch (error) {
+
+        console.log(
+            "Response rate error:",
+            error
+        );
+
+    }
+
+}
+    loadResponseRate();
+
+    setInterval(
+        loadResponseRate,
+        5000
+    );
+
+});
+
+/*
+ * =========================
+ * MOST ACTIVE DAY
+ * =========================
+ */
+
+function loadMostActiveDay() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('most_active_day') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    } else {
+
+        const startDate =
+            document.getElementById(
+                "analyticsStartDate"
+            )?.value;
+
+        const endDate =
+            document.getElementById(
+                "analyticsEndDate"
+            )?.value;
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('most_active_day') }}" +
+            "?start_date=" +
+            encodeURIComponent(startDate) +
+            "&end_date=" +
+            encodeURIComponent(endDate);
+    }
+
+    fetch(requestUrl)
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            const dayElement =
+                document.getElementById(
+                    "mostActiveDay"
+                );
+
+            const countElement =
+                document.getElementById(
+                    "mostActiveDayCount"
+                );
+
+            if (!dayElement || !countElement) {
+                return;
+            }
+
+            if (!data.date) {
+
+                dayElement.textContent =
+                    "No data";
+
+                countElement.textContent =
+                    "0 Messages";
+
+                return;
+            }
+
+            dayElement.textContent =
+                data.date;
+
+            countElement.textContent =
+                data.count + " Messages";
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Most active day error:",
+                error
+            );
+
+        });
+}
+
+
+/*
+ * =========================
+ * PEAK MESSAGE HOUR
+ * =========================
+ */
+
+function loadPeakMessageHour() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('peak_message_hour') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    } else {
+
+        const startDate =
+            document.getElementById(
+                "analyticsStartDate"
+            )?.value;
+
+        const endDate =
+            document.getElementById(
+                "analyticsEndDate"
+            )?.value;
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('peak_message_hour') }}" +
+            "?start_date=" +
+            encodeURIComponent(startDate) +
+            "&end_date=" +
+            encodeURIComponent(endDate);
+    }
+
+    fetch(requestUrl)
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            const hourElement =
+                document.getElementById(
+                    "peakMessageHour"
+                );
+
+            const countElement =
+                document.getElementById(
+                    "peakMessageHourCount"
+                );
+
+            if (!hourElement || !countElement) {
+                return;
+            }
+
+            if (!data.hour) {
+
+                hourElement.textContent =
+                    "No data";
+
+                countElement.textContent =
+                    "0 Messages";
+
+                return;
+            }
+
+            hourElement.textContent =
+                data.hour;
+
+            countElement.textContent =
+                data.count + " Messages";
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Peak message hour error:",
+                error
+            );
+
+        });
+}
+
+
+/*
+ * =========================
+ * INITIAL LOAD
+ * =========================
+ */
+
+loadMostActiveDay();
+
+loadPeakMessageHour();
+
+
+/*
+ * =========================
+ * RANGE BUTTON UPDATE
+ * =========================
+ */
+
+document
+    .querySelectorAll(".analytics-range-btn")
+    .forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                setTimeout(function () {
+
+                    loadMostActiveDay();
+                    loadPeakMessageHour();
+
+                }, 50);
+
+            }
+        );
+
+    });
+
+
+/*
+ * =========================
+ * CUSTOM RANGE UPDATE
+ * =========================
+ */
+
+const applyCustomRange =
+    document.getElementById(
+        "applyCustomRange"
+    );
+
+if (applyCustomRange) {
+
+    applyCustomRange.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(function () {
+
+                loadMostActiveDay();
+                loadPeakMessageHour();
+
+            }, 50);
+
+        }
+    );
+
+}
+
+// =========================
+// MESSAGE GROWTH
+// =========================
+
+function loadMessageGrowth() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+    // PREDEFINED RANGE
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('message_growth') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    }
+
+    // CUSTOM DATE RANGE
+    else {
+
+        const startDateElement =
+            document.getElementById(
+                "analyticsStartDate"
+            );
+
+        const endDateElement =
+            document.getElementById(
+                "analyticsEndDate"
+            );
+
+        const startDate =
+            startDateElement
+                ? startDateElement.value
+                : "";
+
+        const endDate =
+            endDateElement
+                ? endDateElement.value
+                : "";
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('message_growth') }}" +
+            "?start_date=" +
+            encodeURIComponent(
+                startDate
+            ) +
+            "&end_date=" +
+            encodeURIComponent(
+                endDate
+            );
+    }
+
+    fetch(requestUrl)
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error(
+                    "Growth API failed"
+                );
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const growthElement =
+                document.getElementById(
+                    "messageGrowth"
+                );
+
+            const comparisonElement =
+                document.getElementById(
+                    "growthComparison"
+                );
+
+            if (
+                !growthElement ||
+                !comparisonElement
+            ) {
+                return;
+            }
+
+            const growth =
+                Number(data.growth);
+
+            if (growth > 0) {
+
+                growthElement.textContent =
+                    "+" + growth + "%";
+
+                comparisonElement.textContent =
+                    data.current_messages +
+                    " messages vs " +
+                    data.previous_messages +
+                    " previous";
+
+            }
+
+            else if (growth < 0) {
+
+                growthElement.textContent =
+                    growth + "%";
+
+                comparisonElement.textContent =
+                    data.current_messages +
+                    " messages vs " +
+                    data.previous_messages +
+                    " previous";
+
+            }
+
+            else {
+
+                growthElement.textContent =
+                    "0%";
+
+                comparisonElement.textContent =
+                    data.current_messages +
+                    " messages vs " +
+                    data.previous_messages +
+                    " previous";
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Message growth error:",
+                error
+            );
+
+        });
+}
+
+
+// Initial load
+loadMessageGrowth();
+
+
+// Refresh every 5 seconds
+setInterval(
+    loadMessageGrowth,
+    5000
+);
+
+
+// Update when analytics range changes
+document
+    .querySelectorAll(
+        ".analytics-range-btn"
+    )
+    .forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                setTimeout(
+                    loadMessageGrowth,
+                    100
+                );
+
+            }
+        );
+
+    });
+
+
+// Update for custom date range
+const growthCustomRange =
+    document.getElementById(
+        "applyCustomRange"
+    );
+
+if (growthCustomRange) {
+
+    growthCustomRange.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                loadMessageGrowth,
+                100
+            );
+
+        }
+    );
+
+}
+
+// =========================
+// MESSAGE GROWTH TREND CHART
+// =========================
+
+let messageGrowthChart = null;
+
+
+function loadMessageGrowthChart() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+
+    // PREDEFINED RANGE
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('message_growth_chart') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    }
+
+
+    // CUSTOM DATE RANGE
+    else {
+
+        const startDateElement =
+            document.getElementById(
+                "analyticsStartDate"
+            );
+
+        const endDateElement =
+            document.getElementById(
+                "analyticsEndDate"
+            );
+
+        const startDate =
+            startDateElement
+                ? startDateElement.value
+                : "";
+
+        const endDate =
+            endDateElement
+                ? endDateElement.value
+                : "";
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('message_growth_chart') }}" +
+            "?start_date=" +
+            encodeURIComponent(
+                startDate
+            ) +
+            "&end_date=" +
+            encodeURIComponent(
+                endDate
+            );
+    }
+
+
+    fetch(requestUrl)
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error(
+                    "Growth chart API failed"
+                );
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const canvas =
+                document.getElementById(
+                    "messageGrowthChart"
+                );
+
+            if (!canvas) {
+                return;
+            }
+
+
+            const ctx =
+                canvas.getContext("2d");
+
+
+            // Destroy previous chart
+            if (messageGrowthChart) {
+
+                messageGrowthChart.destroy();
+
+            }
+
+
+            messageGrowthChart =
+                new Chart(
+                    ctx,
+                    {
+                        type: "line",
+
+                        data: {
+
+                            labels:
+                                data.labels,
+
+                            datasets: [
+                                {
+                                    label:
+                                        "Messages",
+
+                                    data:
+                                        data.data,
+
+                                    tension:
+                                        0.4,
+
+                                    fill:
+                                        false,
+
+                                    borderWidth:
+                                        2,
+
+                                    pointRadius:
+                                        4
+                                }
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+                                    display:
+                                        true
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero:
+                                        true,
+
+                                    ticks: {
+
+                                        precision:
+                                            0
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Message growth chart error:",
+                error
+            );
+
+        });
+
+}
+
+
+// Initial load
+loadMessageGrowthChart();
+
+
+// Refresh every 5 seconds
+setInterval(
+    loadMessageGrowthChart,
+    5000
+);
+
+
+// Range buttons
+document
+    .querySelectorAll(
+        ".analytics-range-btn"
+    )
+    .forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                setTimeout(
+                    loadMessageGrowthChart,
+                    100
+                );
+
+            }
+        );
+
+    });
+
+
+// Custom range
+const chartCustomRange =
+    document.getElementById(
+        "applyCustomRange"
+    );
+
+if (chartCustomRange) {
+
+    chartCustomRange.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                loadMessageGrowthChart,
+                100
+            );
+
+        }
+    );
+
+}
+
+// =========================
+// TOP CONTACT DAYS CHART
+// =========================
+
+let topContactDaysChart = null;
+
+
+function loadTopContactDaysChart() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+
+    // PREDEFINED RANGE
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('top_contact_days') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    }
+
+
+    // CUSTOM DATE RANGE
+    else {
+
+        const startDateElement =
+            document.getElementById(
+                "analyticsStartDate"
+            );
+
+        const endDateElement =
+            document.getElementById(
+                "analyticsEndDate"
+            );
+
+        const startDate =
+            startDateElement
+                ? startDateElement.value
+                : "";
+
+        const endDate =
+            endDateElement
+                ? endDateElement.value
+                : "";
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('top_contact_days') }}" +
+            "?start_date=" +
+            encodeURIComponent(
+                startDate
+            ) +
+            "&end_date=" +
+            encodeURIComponent(
+                endDate
+            );
+    }
+
+
+    fetch(requestUrl)
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Top contact days API failed"
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const canvas =
+                document.getElementById(
+                    "topContactDaysChart"
+                );
+
+            if (!canvas) {
+                return;
+            }
+
+
+            const ctx =
+                canvas.getContext("2d");
+
+
+            // Destroy old chart
+            if (topContactDaysChart) {
+
+                topContactDaysChart.destroy();
+
+            }
+
+
+            topContactDaysChart =
+                new Chart(
+                    ctx,
+                    {
+
+                        type: "bar",
+
+                        data: {
+
+                            labels:
+                                data.labels,
+
+                            datasets: [
+                                {
+
+                                    label:
+                                        "Messages",
+
+                                    data:
+                                        data.data,
+
+                                    borderWidth:
+                                        1
+
+                                }
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+
+                                    display:
+                                        true
+
+                                }
+
+                            },
+
+                            scales: {
+
+                                y: {
+
+                                    beginAtZero:
+                                        true,
+
+                                    ticks: {
+
+                                        precision:
+                                            0
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Top contact days error:",
+                error
+            );
+
+        });
+
+}
+
+
+// Initial load
+loadTopContactDaysChart();
+
+
+// Refresh every 5 seconds
+setInterval(
+    loadTopContactDaysChart,
+    5000
+);
+
+
+// Analytics range buttons
+document
+    .querySelectorAll(
+        ".analytics-range-btn"
+    )
+    .forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                setTimeout(
+                    loadTopContactDaysChart,
+                    100
+                );
+
+            }
+        );
+
+    });
+
+
+// Custom date range
+const topDaysCustomRange =
+    document.getElementById(
+        "applyCustomRange"
+    );
+
+if (topDaysCustomRange) {
+
+    topDaysCustomRange.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                loadTopContactDaysChart,
+                100
+            );
+
+        }
+    );
+
+}
+
+// =========================
+// MESSAGE STATUS DISTRIBUTION
+// =========================
+
+let statusDistributionChart = null;
+
+
+function loadStatusDistributionChart() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+
+    // PREDEFINED RANGE
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('status_distribution') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    }
+
+
+    // CUSTOM DATE RANGE
+    else {
+
+        const startDateElement =
+            document.getElementById(
+                "analyticsStartDate"
+            );
+
+        const endDateElement =
+            document.getElementById(
+                "analyticsEndDate"
+            );
+
+        const startDate =
+            startDateElement
+                ? startDateElement.value
+                : "";
+
+        const endDate =
+            endDateElement
+                ? endDateElement.value
+                : "";
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('status_distribution') }}" +
+            "?start_date=" +
+            encodeURIComponent(
+                startDate
+            ) +
+            "&end_date=" +
+            encodeURIComponent(
+                endDate
+            );
+    }
+
+
+    fetch(requestUrl)
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Status distribution API failed"
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const canvas =
+                document.getElementById(
+                    "statusDistributionChart"
+                );
+
+            if (!canvas) {
+                return;
+            }
+
+
+            const ctx =
+                canvas.getContext("2d");
+
+
+            // Destroy previous chart
+            if (statusDistributionChart) {
+
+                statusDistributionChart.destroy();
+
+            }
+
+
+            statusDistributionChart =
+                new Chart(
+                    ctx,
+                    {
+
+                        type: "doughnut",
+
+                        data: {
+
+                            labels:
+                                data.labels,
+
+                            datasets: [
+                                {
+
+                                    label:
+                                        "Messages",
+
+                                    data:
+                                        data.data,
+
+                                    borderWidth:
+                                        1
+
+                                }
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+
+                                    display:
+                                        true,
+
+                                    position:
+                                        "bottom"
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Status distribution error:",
+                error
+            );
+
+        });
+
+}
+
+
+// Initial load
+loadStatusDistributionChart();
+
+
+// Refresh every 5 seconds
+setInterval(
+    loadStatusDistributionChart,
+    5000
+);
+
+
+// Analytics range buttons
+document
+    .querySelectorAll(
+        ".analytics-range-btn"
+    )
+    .forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                setTimeout(
+                    loadStatusDistributionChart,
+                    100
+                );
+
+            }
+        );
+
+    });
+
+
+// Custom date range
+const statusCustomRange =
+    document.getElementById(
+        "applyCustomRange"
+    );
+
+if (statusCustomRange) {
+
+    statusCustomRange.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                loadStatusDistributionChart,
+                100
+            );
+
+        }
+    );
+
+}
+
+// =========================
+// RESPONSE TIME ANALYTICS
+// =========================
+
+function formatResponseTime(seconds) {
+
+    seconds = Number(seconds) || 0;
+
+    if (seconds <= 0) {
+        return "No data";
+    }
+
+    const days =
+        Math.floor(
+            seconds / 86400
+        );
+
+    seconds %= 86400;
+
+    const hours =
+        Math.floor(
+            seconds / 3600
+        );
+
+    seconds %= 3600;
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+    if (days > 0) {
+
+        return (
+            days +
+            "d " +
+            hours +
+            "h"
+        );
+
+    }
+
+    if (hours > 0) {
+
+        return (
+            hours +
+            "h " +
+            minutes +
+            "m"
+        );
+
+    }
+
+    return (
+        minutes +
+        "m"
+    );
+}
+
+
+function loadResponseTimeAnalytics() {
+
+    const activeRange =
+        document.querySelector(
+            ".analytics-range-btn.active"
+        );
+
+    let requestUrl;
+
+
+    // PREDEFINED RANGE
+    if (activeRange) {
+
+        const selectedRange =
+            activeRange.dataset.range;
+
+        requestUrl =
+            "{{ url_for('response_time_analytics') }}" +
+            "?range=" +
+            encodeURIComponent(
+                selectedRange
+            );
+
+    }
+
+
+    // CUSTOM DATE RANGE
+    else {
+
+        const startDateElement =
+            document.getElementById(
+                "analyticsStartDate"
+            );
+
+        const endDateElement =
+            document.getElementById(
+                "analyticsEndDate"
+            );
+
+        const startDate =
+            startDateElement
+                ? startDateElement.value
+                : "";
+
+        const endDate =
+            endDateElement
+                ? endDateElement.value
+                : "";
+
+        if (!startDate || !endDate) {
+            return;
+        }
+
+        requestUrl =
+            "{{ url_for('response_time_analytics') }}" +
+            "?start_date=" +
+            encodeURIComponent(
+                startDate
+            ) +
+            "&end_date=" +
+            encodeURIComponent(
+                endDate
+            );
+    }
+
+
+    fetch(requestUrl)
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Response time API failed"
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            const averageElement =
+                document.getElementById(
+                    "averageResponseTime"
+                );
+
+            const fastestElement =
+                document.getElementById(
+                    "fastestResponseTime"
+                );
+
+            const slowestElement =
+                document.getElementById(
+                    "slowestResponseTime"
+                );
+
+            const totalElement =
+                document.getElementById(
+                    "totalResponses"
+                );
+
+
+            if (averageElement) {
+
+                averageElement.textContent =
+                    formatResponseTime(
+                        data.average_seconds
+                    );
+
+            }
+
+
+            if (fastestElement) {
+
+                fastestElement.textContent =
+                    formatResponseTime(
+                        data.fastest_seconds
+                    );
+
+            }
+
+
+            if (slowestElement) {
+
+                slowestElement.textContent =
+                    formatResponseTime(
+                        data.slowest_seconds
+                    );
+
+            }
+
+
+            if (totalElement) {
+
+                totalElement.textContent =
+                    data.responses;
+
+            }
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Response time error:",
+                error
+            );
+
+        });
+
+}
+
+
+// Initial load
+loadResponseTimeAnalytics();
+
+
+// Refresh every 5 seconds
+setInterval(
+    loadResponseTimeAnalytics,
+    5000
+);
+
+
+// Analytics range buttons
+document
+    .querySelectorAll(
+        ".analytics-range-btn"
+    )
+    .forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                setTimeout(
+                    loadResponseTimeAnalytics,
+                    100
+                );
+
+            }
+        );
+
+    });
+
+
+// Custom date range
+const responseTimeCustomRange =
+    document.getElementById(
+        "applyCustomRange"
+    );
+
+if (responseTimeCustomRange) {
+
+    responseTimeCustomRange.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                loadResponseTimeAnalytics,
+                100
+            );
+
+        }
+    );
+
+}
+
+</script>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+
+<script>
+    // =========================
+    // LIVE INTELLIGENCE UPDATE
+    // =========================
+
+    async function updateIntelligenceOverview() {
+
+        try {
+
+            const response = await fetch(
+                "/admin/dashboard/intelligence/data"
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+
+            // -------------------------
+            // DOM ELEMENTS
+            // -------------------------
+
+            const sentimentElement =
+                document.getElementById(
+                    "intelligence-sentiment"
+                );
+
+            const sentimentCountElement =
+                document.getElementById(
+                    "intelligence-sentiment-count"
+                );
+
+            const priorityElement =
+                document.getElementById(
+                    "intelligence-priority"
+                );
+
+            const priorityCountElement =
+                document.getElementById(
+                    "intelligence-priority-count"
+                );
+
+            const replyRateElement =
+                document.getElementById(
+                    "intelligence-reply-rate"
+                );
+
+            const replyCountElement =
+                document.getElementById(
+                    "intelligence-reply-count"
+                );
+
+            const handlingRateElement =
+                document.getElementById(
+                    "intelligence-handling-rate"
+                );
+
+            const handlingCountElement =
+                document.getElementById(
+                    "intelligence-handling-count"
+                );
+
+const trendElement =
+    document.getElementById(
+        "intelligence-trend"
+    );
+
+const trendPercentageElement =
+    document.getElementById(
+        "intelligence-trend-percentage"
+    );
+
+const peakDayElement =
+    document.getElementById(
+        "intelligence-peak-day"
+    );
+
+const peakCountElement =
+    document.getElementById(
+        "intelligence-peak-count"
+    );
+
+    const intelligenceStatusElement =
+    document.getElementById(
+        "intelligence-status"
+    );
+
+const intelligenceMessageElement =
+    document.getElementById(
+        "intelligence-message"
+    );
+            // -------------------------
+            // UPDATE SENTIMENT
+            // -------------------------
+
+            if (sentimentElement) {
+
+                sentimentElement.textContent =
+                    data.dominant_sentiment;
+            }
+
+            if (sentimentCountElement) {
+
+                sentimentCountElement.textContent =
+                    data.dominant_sentiment_count +
+                    " messages";
+            }
+
+            // -------------------------
+// UPDATE SMART RECOMMENDATION
+// -------------------------
+
+if (intelligenceStatusElement) {
+
+    intelligenceStatusElement.textContent =
+        data.intelligence_status;
+}
+
+if (intelligenceMessageElement) {
+
+    intelligenceMessageElement.textContent =
+        data.intelligence_message;
+}
+
+
+            // -------------------------
+            // UPDATE PRIORITY
+            // -------------------------
+
+            if (priorityElement) {
+
+                priorityElement.textContent =
+                    data.dominant_priority;
+            }
+
+            if (priorityCountElement) {
+
+                priorityCountElement.textContent =
+                    data.dominant_priority_count +
+                    " messages";
+            }
+
+
+            // -------------------------
+            // UPDATE REPLY RATE
+            // -------------------------
+
+            if (replyRateElement) {
+
+                replyRateElement.textContent =
+                    data.reply_rate + "%";
+            }
+
+            if (replyCountElement) {
+
+                replyCountElement.textContent =
+                    data.replied_messages +
+                    " replied messages";
+            }
+
+
+            // -------------------------
+            // UPDATE HANDLING RATE
+            // -------------------------
+
+            if (handlingRateElement) {
+
+                handlingRateElement.textContent =
+                    data.handling_rate + "%";
+            }
+
+            if (handlingCountElement) {
+
+                handlingCountElement.textContent =
+                    data.handled_messages +
+                    " handled messages";
+            }
+
+// -------------------------
+// UPDATE MESSAGE TREND
+// -------------------------
+
+if (trendElement) {
+
+    trendElement.textContent =
+        data.message_trend;
+}
+
+if (trendPercentageElement) {
+
+    if (data.trend_percentage > 0) {
+
+        trendPercentageElement.textContent =
+            "+" +
+            data.trend_percentage +
+            "% vs previous 7 days";
+
+    } else if (data.trend_percentage < 0) {
+
+        trendPercentageElement.textContent =
+            data.trend_percentage +
+            "% vs previous 7 days";
+
+    } else {
+
+        trendPercentageElement.textContent =
+            "No significant change";
+    }
+}
+
+
+// -------------------------
+// UPDATE PEAK ACTIVITY
+// -------------------------
+
+if (peakDayElement) {
+
+    peakDayElement.textContent =
+        data.peak_activity_day;
+}
+
+if (peakCountElement) {
+
+    peakCountElement.textContent =
+        data.peak_activity_count +
+        " messages";
+}
+
+        } catch (error) {
+
+            console.error(
+                "Intelligence update error:",
+                error
+            );
+
+        }
+    }
+
+
+    // Initial update
+    updateIntelligenceOverview();
+
+
+    // Update every 30 seconds
+    setInterval(
+        updateIntelligenceOverview,
+        30000
+    );
+</script>
+
+<script>
+    // =========================
+    // SENTIMENT DISTRIBUTION CHART
+    // =========================
+
+    let sentimentChart = null;
+
+    async function updateSentimentChart() {
+
+        try {
+
+            const response = await fetch(
+                "/admin/dashboard/intelligence/data"
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            const canvas =
+                document.getElementById("sentimentChart");
+
+            if (!canvas) {
+                return;
+            }
+
+            /*
+             * API currently returns sentiment_data
+             * as an array of objects.
+             */
+
+            const sentimentData =
+                data.sentiment_data || [];
+
+            const labels =
+                sentimentData.map(
+                    item => item.sentiment
+                );
+
+            const values =
+                sentimentData.map(
+                    item => item.total
+                );
+
+            // Destroy old chart before creating new one
+            if (sentimentChart) {
+                sentimentChart.destroy();
+            }
+
+            sentimentChart =
+                new Chart(canvas, {
+
+                    type: "doughnut",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+                            data: values,
+
+                            borderWidth: 2
+                        }]
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom"
+                            }
+
+                        }
+                    }
+
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Sentiment chart error:",
+                error
+            );
+
+        }
+
+    }
+
+    updateSentimentChart();
+
+    setInterval(
+        updateSentimentChart,
+        30000
+    );
+</script>
+
+<script>
+    // =========================
+    // PRIORITY DISTRIBUTION CHART
+    // =========================
+
+    let priorityChart = null;
+
+    async function updatePriorityChart() {
+
+        try {
+
+            const response = await fetch(
+                "/admin/dashboard/intelligence/data"
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            const canvas =
+                document.getElementById("priorityChart");
+
+            if (!canvas) {
+                return;
+            }
+
+            const priorityData =
+                data.priority_data || [];
+
+            const labels =
+                priorityData.map(
+                    item => item.priority
+                );
+
+            const values =
+                priorityData.map(
+                    item => item.total
+                );
+
+            if (priorityChart) {
+                priorityChart.destroy();
+            }
+
+            priorityChart =
+                new Chart(canvas, {
+
+                    type: "doughnut",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+                            data: values,
+
+                            borderWidth: 2
+                        }]
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                position: "bottom"
+                            }
+
+                        }
+                    }
+
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Priority chart error:",
+                error
+            );
+
+        }
+
+    }
+
+    updatePriorityChart();
+
+    setInterval(
+        updatePriorityChart,
+        30000
+    );
+</script>
+
+<script>
+    // =========================
+    // MESSAGE TREND CHART
+    // =========================
+
+    let messageTrendChart = null;
+
+    async function updateMessageTrendChart() {
+
+        try {
+
+            const response = await fetch(
+                "/admin/dashboard/intelligence/data"
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            const canvas =
+                document.getElementById(
+                    "messageTrendChart"
+                );
+
+            if (!canvas) {
+                return;
+            }
+
+            const labels = [
+                "Previous 7 Days",
+                "Recent 7 Days"
+            ];
+
+            const values = [
+                data.previous_7_days,
+                data.recent_7_days
+            ];
+
+            if (messageTrendChart) {
+                messageTrendChart.destroy();
+            }
+
+            messageTrendChart =
+                new Chart(canvas, {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+                            label: "Messages",
+
+                            data: values,
+
+                            borderWidth: 3,
+
+                            tension: 0.4,
+
+                            fill: false,
+
+                            pointRadius: 5
+                        }]
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                display: true
+                            }
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Message trend chart error:",
+                error
+            );
+
+        }
+
+    }
+
+    updateMessageTrendChart();
+
+    setInterval(
+        updateMessageTrendChart,
+        30000
+    );
+</script>
+
+<script>
+    // =========================
+    // LIVE ADVANCED ANALYTICS
+    // =========================
+
+    async function updateAdvancedAnalytics() {
+
+        try {
+
+            const response = await fetch(
+                "/admin/dashboard/advanced-analytics/data"
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+
+            // Total Messages
+            const totalMessages =
+                document.getElementById(
+                    "analytics-total-messages"
+                );
+
+            if (totalMessages) {
+                totalMessages.textContent =
+                    data.total_messages;
+            }
+
+            // Unique Senders
+            const uniqueSenders =
+                document.getElementById(
+                    "analytics-unique-senders"
+                );
+
+            if (uniqueSenders) {
+                uniqueSenders.textContent =
+                    data.unique_senders;
+            }
+
+            // Active Days
+            const activeDays =
+                document.getElementById(
+                    "analytics-active-days"
+                );
+
+            if (activeDays) {
+                activeDays.textContent =
+                    data.active_days;
+            }
+
+            // Average Messages
+            const averageMessages =
+                document.getElementById(
+                    "analytics-average-messages"
+                );
+
+            if (averageMessages) {
+                averageMessages.textContent =
+                    data.average_messages;
+            }
+
+            // Recent 7 Days
+            const recent7Days =
+                document.getElementById(
+                    "analytics-recent-7-days"
+                );
+
+            if (recent7Days) {
+                recent7Days.textContent =
+                    data.recent_7_days;
+            }
+
+            // Growth
+            const growth =
+                document.getElementById(
+                    "analytics-growth"
+                );
+
+            if (growth) {
+
+                if (data.growth_percentage > 0) {
+
+                    growth.textContent =
+                        "+" +
+                        data.growth_percentage +
+                        "%";
+
+                } else {
+
+                    growth.textContent =
+                        data.growth_percentage +
+                        "%";
+
+                }
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Advanced analytics update error:",
+                error
+            );
+
+        }
+
+    }
+
+    updateAdvancedAnalytics();
+
+    setInterval(
+        updateAdvancedAnalytics,
+        30000
+    );
+</script>
+
+</body>
+
+</html>

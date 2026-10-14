@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Settings</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="admin-container">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="admin-header">
+
+        <div>
+
+            <h1>Admin Settings</h1>
+
+            <p>
+                Manage your administrator account.
+            </p>
+
+        </div>
+
+        <div class="admin-actions">
+
+            <a href="{{ url_for('admin_dashboard') }}"
+               class="btn">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('admin_messages') }}"
+               class="btn">
+                Messages
+            </a>
+
+            <a href="{{ url_for('admin_logout') }}"
+               class="btn btn-danger">
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         FLASH MESSAGES
+    ========================== -->
+
+    {% with messages = get_flashed_messages(
+        with_categories=true
+    ) %}
+
+        {% if messages %}
+
+            <div class="flash-container">
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- =========================
+         CHANGE PASSWORD
+    ========================== -->
+
+    <div class="settings-card">
+
+        <h2>Change Password</h2>
+
+        <p class="settings-description">
+            Enter your current password and choose a new password.
+        </p>
+
+
+        <form method="POST"
+              action="{{ url_for('admin_settings') }}">
+
+            <!-- CSRF -->
+
+            <input type="hidden"
+                   name="csrf_token"
+                   value="{{ csrf_token() }}">
+
+
+            <!-- CURRENT PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="current_password">
+                    Current Password
+                </label>
+
+                <input
+                    type="password"
+                    id="current_password"
+                    name="current_password"
+                    placeholder="Enter current password"
+                    required
+                >
+
+            </div>
+
+
+            <!-- NEW PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="new_password">
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="new_password"
+                    name="new_password"
+                    placeholder="Enter new password"
+                    minlength="8"
+                    required
+                >
+
+                <small>
+                    Password must be at least 8 characters.
+                </small>
+
+            </div>
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <div class="form-group">
+
+                <label for="confirm_password">
+                    Confirm New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Confirm new password"
+                    minlength="8"
+                    required
+                >
+
+            </div>
+
+
+            <!-- SUBMIT -->
+
+            <button
+                type="submit"
+                class="settings-btn">
+                Change Password
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>
+    Message #{{ message["id"] }} | Admin
+</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}">
+
+
+</head>
+
+<body>
+
+<!-- =========================
+     NAVBAR
+========================== -->
+
+<header class="navbar">
+
+<div class="logo">
+    Admin<span>.</span>
+</div>
+
+<nav>
+
+    <a href="{{ url_for('admin_messages') }}">
+        ← Messages
+    </a>
+
+    <a href="{{ url_for('home') }}">
+        Portfolio
+    </a>
+
+    <a href="{{ url_for('admin_logout') }}">
+        Logout
+    </a>
+
+</nav>
+
+</header>
+
+<!-- =========================
+     MAIN
+========================== -->
+
+<main class="message-detail-container">
+
+    
+<!-- PAGE HEADER -->
+
+<div class="message-detail-header">
+
+    <div>
+
+        <p class="tag">
+            MESSAGE DETAILS
+        </p>
+
+        <h1>
+            Message #{{ message["id"] }}
+        </h1>
+
+        <p>
+            Contact message received through
+            your portfolio.
+        </p>
+
+    </div>
+
+
+    <a
+        href="{{ url_for('admin_messages') }}"
+        class="btn secondary">
+
+        ← Back to Messages
+
+    </a>
+
+</div>
+
+
+
+<!-- =========================
+     MESSAGE CARD
+========================== -->
+
+<section class="message-detail-card">
+
+
+    <!-- SENDER -->
+
+    <div class="message-detail-section">
+
+        <p class="detail-label">
+            FROM
+        </p>
+
+        <h2>
+            {{ message["name"] }}
+        </h2>
+
+        <a
+            href="mailto:{{ message['email'] }}"
+            class="detail-email">
+
+            {{ message["email"] }}
+
+        </a>
+
+    </div>
+
+
+
+    <!-- META -->
+
+    <div class="message-meta-grid">
+
+
+        <div>
+
+            <p class="detail-label">
+                STATUS
+            </p>
+
+            <span class="status-badge status-{{ message['status']|lower }}">
+
+                {{ message["status"] }}
+
+            </span>
+
+        </div>
+
+
+        <div>
+
+            <p class="detail-label">
+                RECEIVED
+            </p>
+
+            <p class="detail-value">
+                {{ message["created_at"] }}
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <p class="detail-label">
+                MESSAGE ID
+            </p>
+
+            <p class="detail-value">
+                #{{ message["id"] }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         ORIGINAL MESSAGE
+    ========================== -->
+
+    <div class="message-content">
+
+        <p class="detail-label">
+            MESSAGE
+        </p>
+
+        <div class="message-text">
+
+            {{ message["message"] }}
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         MESSAGE INTELLIGENCE
+    ========================== -->
+
+    <div class="message-intelligence">
+
+        <div class="intelligence-header">
+
+            <div>
+                <p class="detail-label">
+                    MESSAGE INTELLIGENCE
+                </p>
+
+                <h3>
+                    🧠 Automated Analysis
+                </h3>
+
+                <p class="intelligence-description">
+                    Insights generated from the message content.
+                </p>
+            </div>
+
+
+            <!-- SCORE -->
+
+            <div class="intelligence-score">
+
+    <span>
+        Intelligence Score
+    </span>
+
+    <div class="score-number">
+        <strong>
+            {{ message["intelligence_score"] or 0 }}
+        </strong>
+
+        <small>
+            / 100
+        </small>
+    </div>
+
+<div class="score-progress">
+    <div
+        class="score-progress-bar"
+        style= "width: {{ message["intelligence_score"] or 0 }}%;">
+    </div>
+</div>
+
+</div>
+
+</div>
+
+
+        <!-- INTELLIGENCE GRID -->
+
+        <div class="intelligence-grid">
+
+
+            <!-- SENTIMENT -->
+
+            <div class="intelligence-item">
+
+                <span class="intelligence-item-label">
+                    SENTIMENT
+                </span>
+
+                <span class="intelligence-badge sentiment-{{ message['sentiment']|lower }}">
+    {{ message["sentiment"] or "Neutral" }}
+</span>
+
+            </div>
+
+
+            <!-- PRIORITY -->
+
+            <div class="intelligence-item">
+
+                <span class="intelligence-item-label">
+                    PRIORITY
+                </span>
+
+                <span class="intelligence-badge priority-{{ message['priority']|lower }}">
+    {{ message["priority"] or "Medium" }}
+</span>
+
+            </div>
+
+
+            <!-- CATEGORY -->
+
+            <div class="intelligence-item">
+
+                <span class="intelligence-item-label">
+                    CATEGORY
+                </span>
+
+                <strong>
+                    {{ message["category"] or "General" }}
+                </strong>
+
+            </div>
+
+
+            <!-- INTENT -->
+
+            <div class="intelligence-item">
+
+                <span class="intelligence-item-label">
+                    INTENT
+                </span>
+
+                <strong>
+                    {{ message["intent"] or "General Inquiry" }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="intelligence-summary">
+
+            <span class="intelligence-item-label">
+                AI SUMMARY
+            </span>
+
+            <p>
+                {{ message["ai_summary"] or
+                   "No summary available." }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PREVIOUS REPLY
+    ========================== -->
+
+    {% if message["reply"] %}
+
+    <div class="reply-history">
+
+        <div class="reply-history-header">
+
+            <div>
+
+                <p class="detail-label">
+                    YOUR REPLY
+                </p>
+
+                <h3>
+                    Reply sent
+                </h3>
+
+            </div>
+
+            <span class="status-badge status-replied">
+                Replied
+            </span>
+
+        </div>
+
+
+        <div class="reply-history-content">
+
+            {{ message["reply"] }}
+
+        </div>
+
+
+        <div class="reply-meta">
+
+            {% if message["replied_at"] %}
+
+            <span>
+                🕒 {{ message["replied_at"] }}
+            </span>
+
+            {% endif %}
+
+
+            {% if message["replied_by"] %}
+
+            <span>
+                👤 {{ message["replied_by"] }}
+            </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =========================
+         REPLY FORM
+    ========================== -->
+
+    <div class="reply-section">
+
+        <div class="reply-section-header">
+
+            <div>
+
+                <p class="detail-label">
+                    {% if message["reply"] %}
+                        SEND ANOTHER REPLY
+                    {% else %}
+                        REPLY
+                    {% endif %}
+                </p>
+
+                <h3>
+                    Reply to {{ message["name"] }}
+                </h3>
+
+            </div>
+
+            <a
+                href="mailto:{{ message['email'] }}"
+                class="detail-email">
+
+                {{ message["email"] }}
+
+            </a>
+
+        </div>
+
+
+        <form
+            action="{{ url_for(
+                'reply_to_message',
+                message_id=message['id']
+            ) }}"
+            method="POST"
+            class="reply-form">
+
+
+            <!-- CSRF PROTECTION -->
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}">
+
+
+            <textarea
+                name="reply"
+                class="reply-textarea"
+                placeholder="Write your reply here..."
+                rows="7"
+                required></textarea>
+
+
+            <button
+                type="submit"
+                class="admin-btn view-btn">
+
+                {% if message["reply"] %}
+                    Send New Reply
+                {% else %}
+                    Send Reply
+                {% endif %}
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =========================
+         ACTIONS
+    ========================== -->
+
+    <div class="message-detail-actions">
+
+
+        <!-- STATUS -->
+
+        <form
+            action="{{ url_for(
+                'update_status',
+                message_id=message['id']
+            ) }}"
+            method="POST">
+
+
+            <!-- CSRF -->
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}">
+
+
+            <label
+                for="message-status"
+                class="detail-label">
+
+                CHANGE STATUS
+
+            </label>
+
+
+            <select
+                id="message-status"
+                name="status"
+                class="detail-status-select"
+                onchange="this.form.submit()">
+
+
+                <option
+                    value="New"
+                    {% if message["status"] == "New" %}
+                        selected
+                    {% endif %}>
+
+                    New
+
+                </option>
+
+
+                <option
+                    value="Read"
+                    {% if message["status"] == "Read" %}
+                        selected
+                    {% endif %}>
+
+                    Read
+
+                </option>
+
+
+                <option
+                    value="Replied"
+                    {% if message["status"] == "Replied" %}
+                        selected
+                    {% endif %}>
+
+                    Replied
+
+                </option>
+
+
+            </select>
+
+        </form>
+
+
+
+        <!-- DELETE -->
+
+        <form
+            action="{{ url_for(
+                'delete_message',
+                message_id=message['id']
+            ) }}"
+            method="POST"
+            onsubmit="return confirm(
+                'Are you sure you want to delete this message?'
+            );">
+
+
+            <!-- CSRF -->
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}">
+
+
+            <button
+                type="submit"
+                class="btn danger">
+
+                Delete Message
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+</section>
+
+</main>
+
+</body>
+
+</html>
